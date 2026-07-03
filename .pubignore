@@ -1,0 +1,6 @@
+docs/
+benchmark/
+build/
+.git/
+.github/
+*.iml

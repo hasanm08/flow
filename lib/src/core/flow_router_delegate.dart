@@ -4,7 +4,6 @@ import 'flow_router.dart';
 import '../navigation/navigation_engine.dart';
 import '../navigation/navigation_intent.dart';
 import '../navigation/navigation_state.dart';
-import '../observer/flow_navigator_observer.dart';
 import '../page_builder/page_builder.dart';
 import '../typed_routes/flow_route_definition.dart';
 import 'flow_router_scope.dart';
@@ -40,6 +39,9 @@ final class FlowRouterDelegate extends RouterDelegate<NavigationState>
       _syncPlatformUrl();
     }
   }
+
+  /// Notifies the [Router] to rebuild the navigation stack.
+  void rebuild() => notifyListeners();
 
   void _syncPlatformUrl() {
     final info = router.routeInformationParser.restoreRouteInformation(

@@ -9,12 +9,10 @@ import '../navigation/navigation_engine.dart';
 import '../navigation/navigation_intent.dart';
 import '../navigation/navigation_result.dart';
 import '../navigation/navigation_state.dart';
-import '../observer/flow_navigator_observer.dart';
 import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
 import '../utils/flow_exceptions.dart';
 import '../web/imperative_url_policy.dart';
-import '../web/platform_location.dart';
 import 'flow_router_delegate.dart';
 import 'flow_route_information_parser.dart';
 import 'flow_route_information_provider.dart';
@@ -91,7 +89,7 @@ final class FlowRouter {
 
   bool canPop() => engine.canPop();
 
-  void _onRefresh() => routerDelegate.notifyListeners();
+  void _onRefresh() => routerDelegate.rebuild();
 
   Future<NavigationResult> go(
     FlowRoute route, {
@@ -139,7 +137,7 @@ final class FlowRouter {
     return _dispatch(GoBranchIntent(index, route: route), context);
   }
 
-  void refresh() => routerDelegate.notifyListeners();
+  void refresh() => routerDelegate.rebuild();
 
   Future<NavigationResult> _dispatch(
     NavigationIntent intent,

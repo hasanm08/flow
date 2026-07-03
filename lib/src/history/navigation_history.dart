@@ -1,5 +1,3 @@
-import '../web/imperative_url_policy.dart';
-
 /// Records browser history entries for back/forward navigation.
 final class HistoryEntry {
   const HistoryEntry({

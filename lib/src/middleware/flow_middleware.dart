@@ -2,7 +2,6 @@ import 'dart:async';
 
 import '../navigation/navigation_result.dart';
 import '../navigation/navigation_state.dart';
-import '../typed_routes/flow_route_definition.dart';
 
 /// Context for middleware hooks.
 final class MiddlewareContext {

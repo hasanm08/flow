@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../core/navigation_mode.dart';
@@ -97,7 +96,7 @@ final class NavigationEngine extends ChangeNotifier {
     _isDispatching = true;
     try {
       final previous = _state;
-      NavigationState? next;
+      late NavigationState next;
       Object? popResult;
 
       switch (intent) {
@@ -124,10 +123,6 @@ final class NavigationEngine extends ChangeNotifier {
               : await _go(route, extra: extra, context: context);
         case SetLocationIntent(:final location, :final extra):
           next = await _setLocation(location, extra: extra, context: context);
-      }
-
-      if (next == null) {
-        return NavigationResult(state: _state, completed: false);
       }
 
       final middlewareContext = MiddlewareContext(
@@ -381,7 +376,7 @@ final class NavigationEngine extends ChangeNotifier {
               'Navigation blocked',
               reason: reason,
             );
-          case GuardRedirect(:final route, :final mode):
+          case GuardRedirect(:final route):
             current = route;
             redirectCount++;
             redirected = true;

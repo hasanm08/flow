@@ -79,7 +79,6 @@ final class MatchEngine {
             if (consumed == segments.length - segmentIndex) {
               final allParams = {...params, ...queryParams};
               final route = definition.factory(allParams);
-              final location = '$locationPrefix${definition.pathTemplate}';
               matches.add(
                 RouteMatch(
                   route: route,
