@@ -1,5 +1,5 @@
 /// Flow — The next-generation Flutter router.
-library;
+library flow_routing;
 
 export 'src/core/flow_app.dart';
 export 'src/core/flow_router.dart';

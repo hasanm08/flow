@@ -1,4 +1,4 @@
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 
 import '../auth/auth_state.dart';
 import '../routes/app_routes.dart';

@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0  
 **Status:** Production-ready  
-**Package:** `flow`
+**Package:** `flow_routing`
 
 ---
 
@@ -756,7 +756,7 @@ Migration utility (`flow_migration` package):
 ```
 flow/
 ├── lib/
-│   ├── flow.dart                    # Public API barrel
+│   ├── flow_routing.dart            # Public API barrel
 │   └── src/
 │       ├── core/                    # FlowRouter, RouterConfig, config
 │       ├── parser/                  # URI ↔ route parsing
@@ -814,7 +814,7 @@ flow/
 1. **Should `FlowRoute` be a sealed class or an interface?** Sealed enables exhaustive switch; interface allows codegen flexibility.
 2. **Separate `flow_web` package?** Keeps core lean for mobile-only apps.
 3. **Default `ImperativeUrlPolicy`?** Recommend `declarativeOnly` (breaking from GoRouter default).
-4. **`flow_test` as separate package or `package:flow/testing.dart`?** Separate avoids test deps in production.
+4. **`flow_test` as separate package or `package:flow_routing/testing.dart`?** Separate avoids test deps in production.
 
 ---
 

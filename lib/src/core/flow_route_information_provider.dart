@@ -1,4 +1,4 @@
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 import 'package:flutter/widgets.dart';
 
 import '../navigation/navigation_engine.dart';

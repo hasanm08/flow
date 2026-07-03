@@ -1,6 +1,8 @@
-# Flow
+# Flow Routing
 
 **The next-generation Flutter router** — typed, fast, and built from first principles.
+
+Published on pub.dev as [`flow_routing`](https://pub.dev/packages/flow_routing).
 
 [![version](https://img.shields.io/badge/version-1.0.0-indigo)](CHANGELOG.md)
 [![flutter](https://img.shields.io/badge/flutter-%3E%3D3.12-blue)](https://flutter.dev)
@@ -41,11 +43,11 @@ UserRoute(id: 5).location; // → "/users/5?tab=profile"
 
 ```yaml
 dependencies:
-  flow: ^1.0.0
+  flow_routing: ^1.0.0
 ```
 
 ```dart
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 
 final router = FlowRouter(
   routes: [

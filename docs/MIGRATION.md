@@ -16,7 +16,7 @@
 ### Path migration helper
 
 ```dart
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 
 final definition = goRouterPathToDefinition<UserRoute>(
   name: 'user',

@@ -1,6 +1,6 @@
 ## 1.0.0
 
-**Flow is production-ready.**
+**Flow Routing (`flow_routing` on pub.dev) is production-ready.**
 
 ### Core Router
 - Typed `FlowRoute` system with automatic URL generation (`.location`)

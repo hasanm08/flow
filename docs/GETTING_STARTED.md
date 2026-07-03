@@ -6,7 +6,7 @@ Flow is a typed, declarative Flutter router built on Navigator 2.0.
 
 ```yaml
 dependencies:
-  flow: ^1.0.0
+  flow_routing: ^1.0.0
 ```
 
 ## Quick Start

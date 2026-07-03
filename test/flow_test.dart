@@ -1,14 +1,14 @@
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flow/src/core/flow_route_information_parser.dart';
-import 'package:flow/src/matcher/match_engine.dart';
-import 'package:flow/src/matcher/route_registry.dart';
-import 'package:flow/src/navigation/navigation_engine.dart';
-import 'package:flow/src/typed_routes/flow_route.dart';
-import 'package:flow/src/typed_routes/flow_route_definition.dart';
-import 'package:flow/src/web/platform_location.dart';
+import 'package:flow_routing/src/core/flow_route_information_parser.dart';
+import 'package:flow_routing/src/matcher/match_engine.dart';
+import 'package:flow_routing/src/matcher/route_registry.dart';
+import 'package:flow_routing/src/navigation/navigation_engine.dart';
+import 'package:flow_routing/src/typed_routes/flow_route.dart';
+import 'package:flow_routing/src/typed_routes/flow_route_definition.dart';
+import 'package:flow_routing/src/web/platform_location.dart';
 
 void main() {
   group('LocationBuilder', () {

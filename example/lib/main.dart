@@ -1,4 +1,4 @@
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 import 'package:flutter/material.dart';
 
 import 'router.dart';

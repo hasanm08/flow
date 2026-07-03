@@ -1,4 +1,4 @@
-import 'package:flow/flow.dart';
+import 'package:flow_routing/flow_routing.dart';
 
 /// Tab values for user profile routes.
 enum UserTab { overview, activity, settings }

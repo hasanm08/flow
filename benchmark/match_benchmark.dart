@@ -1,7 +1,7 @@
-import 'package:flow/flow.dart';
-import 'package:flow/src/matcher/match_engine.dart';
-import 'package:flow/src/typed_routes/flow_route.dart';
-import 'package:flow/src/typed_routes/flow_route_definition.dart';
+import 'package:flow_routing/flow_routing.dart';
+import 'package:flow_routing/src/matcher/match_engine.dart';
+import 'package:flow_routing/src/typed_routes/flow_route.dart';
+import 'package:flow_routing/src/typed_routes/flow_route_definition.dart';
 
 /// Benchmark route matching performance.
 ///

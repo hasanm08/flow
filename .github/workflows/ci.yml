@@ -61,7 +61,7 @@ jobs:
         id: check
         run: |
           status=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://pub.dev/api/packages/flow/versions/${{ steps.version.outputs.version }}")
+            "https://pub.dev/api/packages/flow_routing/versions/${{ steps.version.outputs.version }}")
           if [ "$status" = "200" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Version ${{ steps.version.outputs.version }} is already on pub.dev."
