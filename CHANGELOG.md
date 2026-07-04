@@ -1,3 +1,11 @@
+## 1.0.2
+
+- Add segment-indexed route matching for faster lookups on large route trees
+- Cache route definitions by name in `RouteRegistry` for O(1) lookup
+- Gate `LoggingMiddleware` output behind `kDebugMode` for production builds
+- Harden CI with format checks and example app analysis
+- Tighten analyzer rules and Flutter SDK constraint (`>=3.12.0`)
+
 ## 1.0.1
 - fix lint issues, and clean up imports across the codebase
 ## 1.0.0

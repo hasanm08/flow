@@ -22,10 +22,10 @@ final class FlowTransition {
   }) : this(duration: duration, type: FlowTransitionType.slide);
 
   const FlowTransition.none()
-      : duration = Duration.zero,
-        reverseDuration = Duration.zero,
-        type = FlowTransitionType.none,
-        preserveGesture = true;
+    : duration = Duration.zero,
+      reverseDuration = Duration.zero,
+      type = FlowTransitionType.none,
+      preserveGesture = true;
 
   final Duration duration;
   final Duration? reverseDuration;
@@ -108,7 +108,8 @@ class _CustomTransitionPage<T> extends Page<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) transitionsBuilder;
+  )
+  transitionsBuilder;
 
   @override
   Route<T> createRoute(BuildContext context) {

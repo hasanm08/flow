@@ -45,7 +45,9 @@ class _UserPageState extends State<UserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: FlowColors.backgroundGradient),
+        decoration: const BoxDecoration(
+          gradient: FlowColors.backgroundGradient,
+        ),
         child: SafeArea(
           child: Column(
             children: [
@@ -68,8 +70,10 @@ class _UserPageState extends State<UserPage> {
                     IconButton(
                       icon: const Icon(Icons.share_outlined),
                       onPressed: () {
-                        final location =
-                            UserRoute(id: widget.route.id, tab: _tab).location;
+                        final location = UserRoute(
+                          id: widget.route.id,
+                          tab: _tab,
+                        ).location;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Share: $location')),
                         );
@@ -147,7 +151,10 @@ class _UserPageState extends State<UserPage> {
                               tab: _tab,
                             ).location,
                           ),
-                          _InfoRow(label: 'User ID', value: '${widget.route.id}'),
+                          _InfoRow(
+                            label: 'User ID',
+                            value: '${widget.route.id}',
+                          ),
                           _InfoRow(label: 'Tab', value: _tab.name),
                           const Spacer(),
                           _TabBody(tab: _tab, userId: widget.route.id),

@@ -72,7 +72,11 @@ final class GoBranchIntent extends NavigationIntent {
 
 /// Navigate using a route (alias for go).
 final class NavigateIntent extends NavigationIntent {
-  const NavigateIntent(this.route, {this.extra, this.mode = FlowNavigationMode.go});
+  const NavigateIntent(
+    this.route, {
+    this.extra,
+    this.mode = FlowNavigationMode.go,
+  });
   final FlowRoute route;
   final Object? extra;
   final FlowNavigationMode mode;

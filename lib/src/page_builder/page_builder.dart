@@ -27,12 +27,7 @@ final class PageBuilder {
               match.definition.build(scopedContext, match.route),
         ),
       );
-      pages.add(
-        match.definition.transition.buildPage(
-          key: key,
-          child: child,
-        ),
-      );
+      pages.add(match.definition.transition.buildPage(key: key, child: child));
     }
 
     final rootOverlay = state.overlayFor('root');
@@ -44,10 +39,8 @@ final class PageBuilder {
           child: FlowRouterScope(
             router: router,
             child: Builder(
-              builder: (scopedContext) => entry.match.definition.build(
-                scopedContext,
-                entry.route,
-              ),
+              builder: (scopedContext) =>
+                  entry.match.definition.build(scopedContext, entry.route),
             ),
           ),
         ),

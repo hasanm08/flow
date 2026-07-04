@@ -17,7 +17,9 @@ class AboutPage extends StatelessWidget {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: FlowColors.backgroundGradient),
+        decoration: const BoxDecoration(
+          gradient: FlowColors.backgroundGradient,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

@@ -116,9 +116,10 @@ final class FlowRouter {
   }
 
   Future<Object?> pop({BuildContext? context, Object? result}) {
-    return _dispatch(PopIntent(result: result), context).then(
-      (r) => r.popResult,
-    );
+    return _dispatch(
+      PopIntent(result: result),
+      context,
+    ).then((r) => r.popResult);
   }
 
   Future<NavigationResult> popUntil(

@@ -14,7 +14,9 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: FlowColors.backgroundGradient),
+        decoration: const BoxDecoration(
+          gradient: FlowColors.backgroundGradient,
+        ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -42,9 +44,8 @@ class LoginPage extends StatelessWidget {
                         const SizedBox(height: 24),
                         Text(
                           'Welcome to Flow',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         const Text(

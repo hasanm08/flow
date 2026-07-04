@@ -12,8 +12,7 @@ final class NavigatorId {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is NavigatorId && other.value == value;
+      identical(this, other) || other is NavigatorId && other.value == value;
 
   @override
   int get hashCode => value.hashCode;

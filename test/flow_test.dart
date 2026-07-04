@@ -152,6 +152,18 @@ void main() {
     });
   });
 
+  group('RouteRegistry', () {
+    test('findDefinitionByName resolves registered routes', () {
+      final registry = RouteRegistry(
+        routes: [FlowLeafNode(_homeDefinition), FlowLeafNode(_userDefinition)],
+      );
+
+      expect(registry.findDefinitionByName('home'), isNotNull);
+      expect(registry.findDefinitionByName('user'), isNotNull);
+      expect(registry.findDefinitionByName('missing'), isNull);
+    });
+  });
+
   group('FakeFlowRouter', () {
     test('records navigation intents', () async {
       final fake = FakeFlowRouter();

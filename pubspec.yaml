@@ -2,7 +2,7 @@ name: flow_routing
 description: >
   The next-generation Flutter router. Typed routes, pipeline guards,
   first-class web support, and performance built from first principles.
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/hasanm08/flow
 repository: https://github.com/hasanm08/flow
 issue_tracker: https://github.com/hasanm08/flow/issues
@@ -15,7 +15,7 @@ topics:
 
 environment:
   sdk: ^3.12.2
-  flutter: ">=1.17.0"
+  flutter: ">=3.12.0"
 
 dependencies:
   flutter:

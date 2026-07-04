@@ -57,10 +57,7 @@ final class FlowRouterDelegate extends RouterDelegate<NavigationState>
     if (state.isEmpty && errorBuilder != null) {
       return FlowRouterScope(
         router: router,
-        child: errorBuilder!(
-          context,
-          engine.toRouteState(state),
-        ),
+        child: errorBuilder!(context, engine.toRouteState(state)),
       );
     }
 

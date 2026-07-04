@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import '../navigation/navigation_result.dart';
 import '../navigation/navigation_state.dart';
 
@@ -29,8 +31,9 @@ final class LoggingMiddleware implements FlowMiddleware {
   final void Function(String message) onLog;
 
   static void _defaultLog(String message) {
-    // ignore: avoid_print
-    print('[Flow] $message');
+    if (kDebugMode) {
+      debugPrint('[Flow] $message');
+    }
   }
 
   @override

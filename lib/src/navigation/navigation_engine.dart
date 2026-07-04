@@ -314,7 +314,7 @@ final class NavigationEngine extends ChangeNotifier {
       }
     }
 
-    var matches = List<RouteMatch>.from(_state.locationChain.matches);
+    final matches = List<RouteMatch>.from(_state.locationChain.matches);
     while (matches.isNotEmpty) {
       final top = matches.last;
       if (top.route.location == targetLocation) {
@@ -342,10 +342,7 @@ final class NavigationEngine extends ChangeNotifier {
     );
   }
 
-  Future<NavigationState> _setLocation(
-    String location, {
-    Object? extra,
-  }) async {
+  Future<NavigationState> _setLocation(String location, {Object? extra}) async {
     final result = _registry.engine.match(Uri.parse(location));
     if (result.isError) return _state;
 

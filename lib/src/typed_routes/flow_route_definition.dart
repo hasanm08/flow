@@ -101,7 +101,7 @@ final class FlowStatefulShellNode extends FlowRouteNode {
   final String pathTemplate;
   final List<FlowBranchNode> branches;
   final Widget Function(BuildContext context, FlowStatefulShellController shell)
-      builder;
+  builder;
   final bool restorable;
   final PathPattern pattern;
 }
@@ -123,10 +123,7 @@ typedef FlowRedirect =
 
 /// Result of a redirect evaluation.
 final class FlowRedirectResult {
-  const FlowRedirectResult(
-    this.route, {
-    this.mode = FlowNavigationMode.go,
-  });
+  const FlowRedirectResult(this.route, {this.mode = FlowNavigationMode.go});
 
   final FlowRoute route;
   final FlowNavigationMode mode;

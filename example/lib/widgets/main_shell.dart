@@ -32,11 +32,7 @@ class MainTabScaffold extends StatelessWidget {
         child: SafeArea(
           child: IndexedStack(
             index: index,
-            children: const [
-              HomePage(),
-              ExplorePage(),
-              ProfilePage(),
-            ],
+            children: const [HomePage(), ExplorePage(), ProfilePage()],
           ),
         ),
       ),
@@ -104,7 +100,8 @@ class FlowHeroHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (trailing != null) Align(alignment: Alignment.topRight, child: trailing),
+          if (trailing != null)
+            Align(alignment: Alignment.topRight, child: trailing),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(

@@ -4,7 +4,7 @@
 
 Published on pub.dev as [`flow_routing`](https://pub.dev/packages/flow_routing).
 
-[![version](https://img.shields.io/badge/version-1.0.0-indigo)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.0.2-indigo)](CHANGELOG.md)
 [![flutter](https://img.shields.io/badge/flutter-%3E%3D3.12-blue)](https://flutter.dev)
 
 ```dart

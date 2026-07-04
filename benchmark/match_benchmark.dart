@@ -2,7 +2,8 @@ import 'package:flow_routing/flow_routing.dart';
 
 /// Benchmark route matching performance.
 ///
-/// Run: `dart run benchmark/match_benchmark.dart`
+/// Run: `flutter test test/match_benchmark_test.dart`
+/// Or this script: `flutter run benchmark/match_benchmark.dart` (requires Flutter)
 void main() {
   final routes = List.generate(100, (i) {
     return FlowLeafNode(

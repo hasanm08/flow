@@ -52,10 +52,7 @@ FlowRouter createRouter() {
           factory: (params) {
             final tabName = params['tab'];
             final tab = UserTab.values.asNameMap()[tabName] ?? UserTab.overview;
-            return UserRoute(
-              id: int.parse(params['id']!),
-              tab: tab,
-            );
+            return UserRoute(id: int.parse(params['id']!), tab: tab);
           },
           transition: const FlowTransition.slide(),
         ),
@@ -74,8 +71,7 @@ FlowRouter createRouter() {
           name: 'login',
           pathTemplate: '/login',
           builder: (context, route) => LoginPage(route: route),
-          factory: (params) =>
-              LoginRoute(returnTo: params['returnTo']),
+          factory: (params) => LoginRoute(returnTo: params['returnTo']),
           transition: const FlowTransition.fade(),
         ),
       ),

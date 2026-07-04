@@ -52,11 +52,11 @@ abstract class FlowRoute {
 
   @override
   int get hashCode => Object.hash(
-        name,
-        Object.hashAll(pathParameters.entries),
-        Object.hashAll(queryParameters.entries),
-        fragment,
-      );
+    name,
+    Object.hashAll(pathParameters.entries),
+    Object.hashAll(queryParameters.entries),
+    fragment,
+  );
 
   bool _mapEquals(Map<String, String> a, Map<String, String> b) {
     if (a.length != b.length) return false;

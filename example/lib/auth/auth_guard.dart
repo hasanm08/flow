@@ -12,9 +12,7 @@ final class AuthGuard extends FlowGuard {
     final route = context.targetRoute;
     if (route is LoginRoute) return const GuardAllow();
     if (!authState.isLoggedIn) {
-      return GuardRedirect(
-        LoginRoute(returnTo: route.location),
-      );
+      return GuardRedirect(LoginRoute(returnTo: route.location));
     }
     return const GuardAllow();
   }

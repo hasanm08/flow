@@ -3,12 +3,15 @@ import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
 import 'path_pattern.dart';
 import 'route_match.dart';
+import 'route_segment_index.dart';
 
 /// Efficient segment-based route matching engine.
 final class MatchEngine {
-  MatchEngine(this._nodes);
+  MatchEngine(this._nodes)
+    : _segmentIndexes = buildRouteSegmentIndexCache(_nodes);
 
   final List<FlowRouteNode> _nodes;
+  final Map<List<FlowRouteNode>, RouteSegmentIndex> _segmentIndexes;
 
   MatchResult match(Uri rawUri) {
     final uri = UriNormalizer.normalize(rawUri);
@@ -17,9 +20,9 @@ final class MatchEngine {
 
     final matches = <RouteMatch>[];
     final shellMatches = <ShellMatch>[];
-    var branchIndex = 0;
+    const branchIndex = 0;
 
-  final result = _matchNodes(
+    final result = _matchNodes(
       _nodes,
       segments,
       0,
@@ -32,10 +35,7 @@ final class MatchEngine {
 
     if (result == null) {
       return MatchResult(
-        chain: RouteMatchChain(
-          matches: const [],
-          uri: uri,
-        ),
+        chain: RouteMatchChain(matches: const [], uri: uri),
         error: 'No route matches location: ${uri.path}',
       );
     }
@@ -65,7 +65,9 @@ final class MatchEngine {
     int branchIndex,
     Map<String, String> queryParams,
   ) {
-    for (final node in nodes) {
+    final index = _segmentIndexes[nodes];
+    final candidates = index?.candidates(segmentIndex, segments) ?? nodes;
+    for (final node in candidates) {
       switch (node) {
         case FlowLeafNode(:final definition):
           final match = _matchPattern(

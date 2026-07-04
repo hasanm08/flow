@@ -13,71 +13,75 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-          SliverToBoxAdapter(
-            child: FlowHeroHeader(
-              title: 'Profile',
-              subtitle: authState.isLoggedIn ? 'Signed in' : 'Guest mode',
-            ),
+        SliverToBoxAdapter(
+          child: FlowHeroHeader(
+            title: 'Profile',
+            subtitle: authState.isLoggedIn ? 'Signed in' : 'Guest mode',
           ),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Center(
-                  child: Container(
-                    width: 96,
-                    height: 96,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: FlowColors.gradient,
-                      boxShadow: [
-                        BoxShadow(
-                          color: FlowColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.person, size: 48, color: Colors.white),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              Center(
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: FlowColors.gradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: FlowColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 48,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 24),
-                Center(
-                  child: Text(
-                    authState.isLoggedIn ? 'Flow Developer' : 'Guest User',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  authState.isLoggedIn ? 'Flow Developer' : 'Guest User',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 32),
-                _ActionTile(
-                  icon: Icons.settings_outlined,
-                  label: 'Settings',
-                  onTap: () => context.go(const SettingsRoute()),
-                ),
-                _ActionTile(
-                  icon: Icons.person_outline,
-                  label: 'View My Profile',
-                  subtitle: const UserRoute(id: 42).location,
-                  onTap: () => context.go(const UserRoute(id: 42)),
-                ),
-                _ActionTile(
-                  icon: authState.isLoggedIn ? Icons.logout : Icons.login,
-                  label: authState.isLoggedIn ? 'Sign Out' : 'Sign In',
-                  onTap: () {
-                    if (authState.isLoggedIn) {
-                      authState.logout();
-                      context.go(const LoginRoute());
-                    } else {
-                      context.go(const LoginRoute(returnTo: '/profile'));
-                    }
-                  },
-                ),
-              ]),
-            ),
+              ),
+              const SizedBox(height: 32),
+              _ActionTile(
+                icon: Icons.settings_outlined,
+                label: 'Settings',
+                onTap: () => context.go(const SettingsRoute()),
+              ),
+              _ActionTile(
+                icon: Icons.person_outline,
+                label: 'View My Profile',
+                subtitle: const UserRoute(id: 42).location,
+                onTap: () => context.go(const UserRoute(id: 42)),
+              ),
+              _ActionTile(
+                icon: authState.isLoggedIn ? Icons.logout : Icons.login,
+                label: authState.isLoggedIn ? 'Sign Out' : 'Sign In',
+                onTap: () {
+                  if (authState.isLoggedIn) {
+                    authState.logout();
+                    context.go(const LoginRoute());
+                  } else {
+                    context.go(const LoginRoute(returnTo: '/profile'));
+                  }
+                },
+              ),
+            ]),
           ),
-        ],
+        ),
+      ],
     );
   }
 }
@@ -104,7 +108,10 @@ class _ActionTile extends StatelessWidget {
           leading: Icon(icon, color: FlowColors.primary),
           title: Text(label),
           subtitle: subtitle != null
-              ? Text(subtitle!, style: const TextStyle(fontFamily: 'monospace', fontSize: 12))
+              ? Text(
+                  subtitle!,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                )
               : null,
           trailing: const Icon(Icons.chevron_right),
           onTap: onTap,

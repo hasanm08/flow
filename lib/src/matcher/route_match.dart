@@ -65,10 +65,7 @@ RouteMatchChain applyRouteToChain(RouteMatchChain chain, FlowRoute route) {
   if (chain.matches.isEmpty) return chain;
   final matches = List<RouteMatch>.from(chain.matches);
   matches[matches.length - 1] = matches.last.copyWithRoute(route);
-  return chain.copyWith(
-    matches: matches,
-    uri: Uri.parse(route.location),
-  );
+  return chain.copyWith(matches: matches, uri: Uri.parse(route.location));
 }
 
 /// Match for a shell route in the tree.
@@ -90,10 +87,7 @@ final class ShellMatch {
 
 /// Result of matching a URI against the route registry.
 final class MatchResult {
-  const MatchResult({
-    required this.chain,
-    this.error,
-  });
+  const MatchResult({required this.chain, this.error});
 
   final RouteMatchChain chain;
   final String? error;
