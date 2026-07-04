@@ -40,7 +40,57 @@ jobs:
     name: Publish to pub.dev
     needs: ci
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
     permissions:
-      id-token: write # Required for OIDC authentication with pub.dev
+      id-token: write # Required for GitHub OIDC with pub.dev
       contents: read
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Read package version
+        id: version
+        run: echo "version=$(awk '/^version:/{print $2}' pubspec.yaml)" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if version already published
+        id: check
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://pub.dev/api/packages/flow_routing/versions/${{ steps.version.outputs.version }}")
+          if [ "$status" = "200" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${{ steps.version.outputs.version }} is already on pub.dev."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate with pub.dev (upload credentials secret)
+        if: steps.check.outputs.skip != 'true'
+        env:
+          PUB_CREDENTIALS: ${{ secrets.PUB_CREDENTIALS }}
+        run: |
+          if [ -n "$PUB_CREDENTIALS" ]; then
+            mkdir -p "$HOME/.config/dart"
+            printf '%s' "$PUB_CREDENTIALS" > "$HOME/.config/dart/pub-credentials.json"
+            echo "USE_PUB_SECRET=1" >> "$GITHUB_ENV"
+            echo "Authenticated with PUB_CREDENTIALS secret."
+          else
+            echo "USE_PUB_SECRET=0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Authenticate with pub.dev (GitHub OIDC)
+        if: steps.check.outputs.skip != 'true' && env.USE_PUB_SECRET == '0'
+        uses: flutter-actions/setup-pubdev-credentials@v1
+
+      - name: Publish package
+        if: steps.check.outputs.skip != 'true'
+        run: dart pub publish --force
