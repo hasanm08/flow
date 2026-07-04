@@ -152,10 +152,7 @@ final class NavigationEngine extends ChangeNotifier {
           }
       }
 
-      final result = NavigationResult(
-        state: _state,
-        popResult: popResult,
-      );
+      final result = NavigationResult(state: _state, popResult: popResult);
 
       for (final m in middleware) {
         await m.onAfter(middlewareContext, result);
@@ -224,25 +221,21 @@ final class NavigationEngine extends ChangeNotifier {
         ..removeLast();
       final chain = _state.locationChain.copyWith(matches: matches);
       _history.goBack();
-      return (
-        _state.copyWith(locationChain: chain),
-        null,
-      );
+      return (_state.copyWith(locationChain: chain), null);
     }
 
     if (_history.canGoBack) {
       final entry = _history.goBack();
       if (entry != null) {
         final uri = Uri.parse(
-          entry.location.startsWith('/') ? entry.location : '/${entry.location}',
+          entry.location.startsWith('/')
+              ? entry.location
+              : '/${entry.location}',
         );
         final result = _registry.engine.match(uri);
         if (!result.isError) {
           return (
-            NavigationState(
-              locationChain: result.chain,
-              extra: entry.extra,
-            ),
+            NavigationState(locationChain: result.chain, extra: entry.extra),
             null,
           );
         }
@@ -317,9 +310,10 @@ final class NavigationEngine extends ChangeNotifier {
   }
 
   Future<NavigationState> _goBranch(
-    int index,
-    {FlowRoute? route, BuildContext? context}
-  ) async {
+    int index, {
+    FlowRoute? route,
+    BuildContext? context,
+  }) async {
     if (route != null) {
       return _go(route, context: context);
     }
@@ -336,10 +330,7 @@ final class NavigationEngine extends ChangeNotifier {
     final result = _registry.engine.match(Uri.parse(location));
     if (result.isError) return _state;
 
-    return NavigationState(
-      locationChain: result.chain,
-      extra: extra,
-    );
+    return NavigationState(locationChain: result.chain, extra: extra);
   }
 
   Future<FlowRoute?> _resolveWithGuards(
@@ -387,9 +378,7 @@ final class NavigationEngine extends ChangeNotifier {
       return current;
     }
 
-    throw const FlowRedirectLoopException(
-      'Maximum redirect depth exceeded',
-    );
+    throw const FlowRedirectLoopException('Maximum redirect depth exceeded');
   }
 
   List<FlowGuard> _collectRouteGuards(RouteMatchChain chain) {

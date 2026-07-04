@@ -7,7 +7,7 @@ import '../typed_routes/flow_route.dart';
 
 /// Test double that records navigation intents without building widgets.
 final class FakeFlowRouter extends ChangeNotifier {
-  FakeFlowRouter({NavigationEngine? engine}) : _engine = engine;
+  FakeFlowRouter({this._engine});
 
   NavigationEngine? _engine;
   final List<NavigationIntent> intents = [];

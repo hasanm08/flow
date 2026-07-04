@@ -2,9 +2,6 @@ import 'package:flow_routing/flow_routing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flow_routing/src/typed_routes/flow_route.dart';
-import 'package:flow_routing/src/typed_routes/flow_route_definition.dart';
-
 void main() {
   testWidgets('FlowApp builds with router', (tester) async {
     final router = FlowRouter(
@@ -21,9 +18,7 @@ void main() {
       ],
     );
 
-    await tester.pumpWidget(
-      FlowApp.router(router: router, title: 'Test'),
-    );
+    await tester.pumpWidget(FlowApp.router(router: router, title: 'Test'));
     await tester.pumpAndSettle();
 
     expect(find.text('Hello Flow'), findsOneWidget);

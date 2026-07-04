@@ -1,10 +1,7 @@
-import 'package:flow_routing/flow_routing.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:flow_example/main.dart';
 import 'package:flow_example/router.dart';
 import 'package:flow_example/routes/app_routes.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('Flow demo app renders home', (tester) async {

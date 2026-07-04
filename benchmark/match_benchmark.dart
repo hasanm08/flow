@@ -1,7 +1,4 @@
 import 'package:flow_routing/flow_routing.dart';
-import 'package:flow_routing/src/matcher/match_engine.dart';
-import 'package:flow_routing/src/typed_routes/flow_route.dart';
-import 'package:flow_routing/src/typed_routes/flow_route_definition.dart';
 
 /// Benchmark route matching performance.
 ///
@@ -29,7 +26,9 @@ void main() {
 
   final usPerOp = stopwatch.elapsedMicroseconds / iterations;
   // ignore: avoid_print
-  print('Flow MatchEngine: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)');
+  print(
+    'Flow MatchEngine: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)',
+  );
 }
 
 final class _BenchRoute extends FlowRoute {

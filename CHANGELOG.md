@@ -1,3 +1,5 @@
+## 1.0.1
+- fix lint issues, and clean up imports across the codebase
 ## 1.0.0
 
 **Flow Routing (`flow_routing` on pub.dev) is production-ready.**

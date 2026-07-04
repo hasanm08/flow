@@ -1,14 +1,8 @@
 import 'package:flow_routing/flow_routing.dart';
+import 'package:flow_routing/src/core/flow_route_information_parser.dart';
+import 'package:flow_routing/src/web/platform_location.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flow_routing/src/core/flow_route_information_parser.dart';
-import 'package:flow_routing/src/matcher/match_engine.dart';
-import 'package:flow_routing/src/matcher/route_registry.dart';
-import 'package:flow_routing/src/navigation/navigation_engine.dart';
-import 'package:flow_routing/src/typed_routes/flow_route.dart';
-import 'package:flow_routing/src/typed_routes/flow_route_definition.dart';
-import 'package:flow_routing/src/web/platform_location.dart';
 
 void main() {
   group('LocationBuilder', () {
@@ -71,7 +65,10 @@ void main() {
           FlowLeafNode(_exploreDefinition),
         ],
       );
-      final engine = NavigationEngine(registry: registry, initialLocation: '/home');
+      final engine = NavigationEngine(
+        registry: registry,
+        initialLocation: '/home',
+      );
       final parser = FlowRouteInformationParser(engine: engine);
       final state = await parser.parseRouteInformation(
         RouteInformation(uri: Uri.parse('/explore')),
@@ -93,10 +90,7 @@ void main() {
       );
       final parser = FlowRouteInformationParser(engine: navEngine);
 
-      expect(
-        parser.restoreRouteInformation(navEngine.state).uri.path,
-        '/home',
-      );
+      expect(parser.restoreRouteInformation(navEngine.state).uri.path, '/home');
 
       await navEngine.dispatch(const GoIntent(ExploreRoute()));
       expect(
