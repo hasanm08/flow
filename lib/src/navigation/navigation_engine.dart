@@ -90,9 +90,11 @@ final class NavigationEngine extends ChangeNotifier {
     NavigationIntent intent, {
     BuildContext? context,
   }) async {
-    if (_isDispatching) {
+    final incomingContext = context;
+    while (_isDispatching) {
       await Future<void>.delayed(Duration.zero);
     }
+
     _isDispatching = true;
     try {
       final previous = _state;
@@ -101,7 +103,13 @@ final class NavigationEngine extends ChangeNotifier {
 
       switch (intent) {
         case GoIntent(:final route, :final extra):
-          next = await _go(route, extra: extra, context: context);
+          next = await _go(
+            route,
+            extra: extra,
+            context: incomingContext != null && incomingContext.mounted
+                ? incomingContext
+                : null,
+          );
         case PushIntent(:final route, :final extra, :final navigatorId):
           next = _push(route, navigatorId: navigatorId, extra: extra);
         case PopIntent(:final navigatorId):
@@ -116,13 +124,25 @@ final class NavigationEngine extends ChangeNotifier {
         case PopUntilIntent(:final route, :final inclusive):
           next = _popUntil(route, inclusive: inclusive);
         case GoBranchIntent(:final index, :final route):
-          next = await _goBranch(index, route: route, context: context);
+          next = await _goBranch(
+            index,
+            route: route,
+            context: incomingContext != null && incomingContext.mounted
+                ? incomingContext
+                : null,
+          );
         case NavigateIntent(:final route, :final extra, :final mode):
           next = mode == FlowNavigationMode.push
               ? _push(route, extra: extra)
-              : await _go(route, extra: extra, context: context);
+              : await _go(
+                  route,
+                  extra: extra,
+                  context: incomingContext != null && incomingContext.mounted
+                      ? incomingContext
+                      : null,
+                );
         case SetLocationIntent(:final location, :final extra):
-          next = await _setLocation(location, extra: extra, context: context);
+          next = await _setLocation(location, extra: extra);
       }
 
       final middlewareContext = MiddlewareContext(
@@ -325,7 +345,6 @@ final class NavigationEngine extends ChangeNotifier {
   Future<NavigationState> _setLocation(
     String location, {
     Object? extra,
-    BuildContext? context,
   }) async {
     final result = _registry.engine.match(Uri.parse(location));
     if (result.isError) return _state;
@@ -337,6 +356,7 @@ final class NavigationEngine extends ChangeNotifier {
     FlowRoute route, {
     BuildContext? context,
   }) async {
+    var activeContext = context;
     var current = route;
     var redirectCount = 0;
 
@@ -349,15 +369,19 @@ final class NavigationEngine extends ChangeNotifier {
       );
       final currentState = toRouteState(_state);
 
-      final guardContext = GuardContext(
-        context: context,
-        currentState: currentState,
-        targetRoute: current,
-        targetState: targetState,
-      );
-
       var redirected = false;
       for (final guard in [...guards, ..._collectRouteGuards(result.chain)]) {
+        final guardContext = GuardContext(
+          context: activeContext != null && activeContext.mounted
+              ? activeContext
+              : null,
+          currentState: currentState,
+          targetRoute: current,
+          targetState: targetState,
+        );
+        if (guardContext.context == null) {
+          activeContext = null;
+        }
         final guardResult = await guard.canActivate(guardContext);
         switch (guardResult) {
           case GuardAllow():
