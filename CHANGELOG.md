@@ -1,5 +1,9 @@
 ## 1.0.2
 
+- add benchmark image to README for performance tracking.
+
+## 1.0.2
+
 - Add segment-indexed route matching for faster lookups on large route trees
 - Cache route definitions by name in `RouteRegistry` for O(1) lookup
 - Gate `LoggingMiddleware` output behind `kDebugMode` for production builds
