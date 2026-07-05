@@ -1,6 +1,7 @@
 # Flow Routing
 
 **The next-generation Flutter router** — typed, fast, and built from first principles.
+![image](benchmark.png)
 
 Published on pub.dev as [`flow_routing`](https://pub.dev/packages/flow_routing).
 
