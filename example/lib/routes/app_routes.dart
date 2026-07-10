@@ -16,7 +16,10 @@ abstract final class Routes {
   static const home = FlowRoute(name: 'home', pathTemplate: '/home');
   static const explore = FlowRoute(name: 'explore', pathTemplate: '/explore');
   static const profile = FlowRoute(name: 'profile', pathTemplate: '/profile');
-  static const settings = FlowRoute(name: 'settings', pathTemplate: '/settings');
+  static const settings = FlowRoute(
+    name: 'settings',
+    pathTemplate: '/settings',
+  );
   static const about = FlowRoute(name: 'about', pathTemplate: '/about');
   static const login = FlowRoute(name: 'login', pathTemplate: '/login');
 
@@ -25,9 +28,7 @@ abstract final class Routes {
         name: 'user',
         pathTemplate: '/users/:id',
         pathParameters: {'id': '$id'},
-        queryParameters: tab == UserTab.overview
-            ? const {}
-            : {'tab': tab.name},
+        queryParameters: tab == UserTab.overview ? const {} : {'tab': tab.name},
       );
 
   static FlowRoute loginWithReturn(String returnTo) => FlowRoute(

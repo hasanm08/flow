@@ -79,8 +79,10 @@ class _UserPageState extends State<UserPage> {
                     IconButton(
                       icon: const Icon(Icons.share_outlined),
                       onPressed: () {
-                        final location = Routes.user(id: _userId, tab: _tab)
-                            .location;
+                        final location = Routes.user(
+                          id: _userId,
+                          tab: _tab,
+                        ).location;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Share: $location')),
                         );

@@ -8,8 +8,7 @@ import 'route_segment_index.dart';
 
 /// Efficient segment-based route matching engine.
 final class MatchEngine {
-  MatchEngine(this._nodes)
-    : _trieIndexes = buildRouteTrieIndexCache(_nodes);
+  MatchEngine(this._nodes) : _trieIndexes = buildRouteTrieIndexCache(_nodes);
 
   final List<FlowRouteNode> _nodes;
   final Map<List<FlowRouteNode>, RouteTrieIndex> _trieIndexes;

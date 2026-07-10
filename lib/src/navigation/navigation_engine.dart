@@ -193,7 +193,8 @@ final class NavigationEngine extends ChangeNotifier {
     final resolved = await _resolveWithGuards(route, context: context);
     if (resolved == null) return _state;
 
-    final result = _registry.matchTypedRoute(resolved) ??
+    final result =
+        _registry.matchTypedRoute(resolved) ??
         _registry.engine.match(Uri.parse(resolved.location));
     if (result.isError) return _state;
 
@@ -209,7 +210,8 @@ final class NavigationEngine extends ChangeNotifier {
     NavigatorId navigatorId = NavigatorId.root,
     Object? extra,
   }) {
-    final result = _registry.matchTypedRoute(route) ??
+    final result =
+        _registry.matchTypedRoute(route) ??
         _registry.engine.match(Uri.parse(route.location));
     if (result.isError || result.chain.leaf == null) return _state;
 
@@ -273,7 +275,8 @@ final class NavigationEngine extends ChangeNotifier {
     NavigatorId navigatorId = NavigatorId.root,
     Object? extra,
   }) {
-    final result = _registry.matchTypedRoute(route) ??
+    final result =
+        _registry.matchTypedRoute(route) ??
         _registry.engine.match(Uri.parse(route.location));
     if (result.isError || result.chain.leaf == null) return _state;
 
@@ -364,7 +367,8 @@ final class NavigationEngine extends ChangeNotifier {
     var redirectCount = 0;
 
     while (redirectCount < maxRedirects) {
-      final result = _registry.matchTypedRoute(current) ??
+      final result =
+          _registry.matchTypedRoute(current) ??
           _registry.engine.match(Uri.parse(current.location));
       if (result.isError) return null;
 

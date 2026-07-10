@@ -29,12 +29,9 @@ final class FlowRouteDefinition {
     this.restorable = true,
     this.pageKey,
   }) : pattern = PathPattern.parse(pathTemplate),
-       factory = factory ??
-           _defaultFactory(
-             name,
-             pathTemplate,
-             PathPattern.parse(pathTemplate),
-           );
+       factory =
+           factory ??
+           _defaultFactory(name, pathTemplate, PathPattern.parse(pathTemplate));
 
   final String name;
   final String pathTemplate;

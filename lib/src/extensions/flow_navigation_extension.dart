@@ -25,11 +25,7 @@ extension FlowNavigation on BuildContext {
   /// context.flow(Routes.home);                    // go
   /// context.flow(Routes.about, push: true);       // push overlay
   /// ```
-  Future<void> flow(
-    FlowRoute route, {
-    bool push = false,
-    Object? extra,
-  }) {
+  Future<void> flow(FlowRoute route, {bool push = false, Object? extra}) {
     if (push) {
       return flowRouter.push(route, extra: extra, context: this);
     }

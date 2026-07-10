@@ -22,11 +22,7 @@ void main() {
     late MatchEngine engine;
 
     setUp(() {
-      engine = MatchEngine([
-        _homeNode,
-        _userNode,
-        _settingsNode,
-      ]);
+      engine = MatchEngine([_homeNode, _userNode, _settingsNode]);
     });
 
     test('matches root path', () {
@@ -58,9 +54,7 @@ void main() {
     });
 
     test('parseRouteInformation handles explore deep link', () async {
-      final registry = RouteRegistry(
-        routes: [_homeNode, _exploreNode],
-      );
+      final registry = RouteRegistry(routes: [_homeNode, _exploreNode]);
       final engine = NavigationEngine(
         registry: registry,
         initialLocation: '/home',
@@ -143,9 +137,7 @@ void main() {
 
   group('RouteRegistry', () {
     test('findDefinitionByName resolves registered routes', () {
-      final registry = RouteRegistry(
-        routes: [_homeNode, _userNode],
-      );
+      final registry = RouteRegistry(routes: [_homeNode, _userNode]);
 
       expect(registry.findDefinitionByName('home'), isNotNull);
       expect(registry.findDefinitionByName('user'), isNotNull);
@@ -188,9 +180,7 @@ abstract final class Routes {
         name: 'user',
         pathTemplate: '/users/:id',
         pathParameters: {'id': '$id'},
-        queryParameters: tab == UserTab.overview
-            ? const {}
-            : {'tab': tab.name},
+        queryParameters: tab == UserTab.overview ? const {} : {'tab': tab.name},
       );
 }
 

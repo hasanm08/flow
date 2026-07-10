@@ -111,9 +111,7 @@ final class RouteTrieIndex {
   }
 
   static String _decodeSegment(String segment) {
-    return segment.contains('%')
-        ? Uri.decodeComponent(segment)
-        : segment;
+    return segment.contains('%') ? Uri.decodeComponent(segment) : segment;
   }
 }
 

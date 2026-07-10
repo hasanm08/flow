@@ -81,8 +81,7 @@ final class NavigationState {
       identical(this, other) ||
       other is NavigationState &&
           locationChain.uri == other.locationChain.uri &&
-          locationChain.matches.length ==
-              other.locationChain.matches.length &&
+          locationChain.matches.length == other.locationChain.matches.length &&
           extra == other.extra &&
           _mapEquals(overlayStacks, other.overlayStacks);
 

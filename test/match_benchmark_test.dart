@@ -65,12 +65,7 @@ void main() {
 
   group('NavigationEngine benchmarks', () {
     test('go dispatch with typed fast path', () async {
-      final registry = RouteRegistry(
-        routes: [
-          _homeNode,
-          _userNode,
-        ],
-      );
+      final registry = RouteRegistry(routes: [_homeNode, _userNode]);
       final engine = NavigationEngine(registry: registry);
       const iterations = 1000;
 
@@ -90,11 +85,7 @@ void main() {
   });
 
   test('RouteTrieIndex preserves match correctness', () {
-    final engine = MatchEngine([
-      _homeNode,
-      _userNode,
-      _settingsNode,
-    ]);
+    final engine = MatchEngine([_homeNode, _userNode, _settingsNode]);
 
     expect(engine.match(Uri.parse('/home')).isError, isFalse);
     expect(engine.match(Uri.parse('/users/7')).isError, isFalse);
