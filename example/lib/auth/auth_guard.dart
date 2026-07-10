@@ -10,9 +10,9 @@ final class AuthGuard extends FlowGuard {
   @override
   GuardResult canActivate(GuardContext context) {
     final route = context.targetRoute;
-    if (route is LoginRoute) return const GuardAllow();
+    if (route.isName('login')) return const GuardAllow();
     if (!authState.isLoggedIn) {
-      return GuardRedirect(LoginRoute(returnTo: route.location));
+      return GuardRedirect(Routes.loginWithReturn(route.location));
     }
     return const GuardAllow();
   }
@@ -24,8 +24,8 @@ final class SettingsGuard extends FlowGuard {
 
   @override
   GuardResult canActivate(GuardContext context) {
-    if (context.targetRoute is SettingsRoute && !authState.isLoggedIn) {
-      return GuardRedirect(const LoginRoute(returnTo: '/settings'));
+    if (context.targetRoute.isName('settings') && !authState.isLoggedIn) {
+      return GuardRedirect(Routes.loginWithReturn('/settings'));
     }
     return const GuardAllow();
   }

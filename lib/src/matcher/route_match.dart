@@ -1,5 +1,6 @@
 import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
+import '../typed_routes/location_builder.dart';
 
 /// A single matched route in the navigation tree.
 final class RouteMatch {
@@ -22,7 +23,10 @@ final class RouteMatch {
       route: route,
       definition: definition,
       pathParameters: route.pathParameters,
-      matchedLocation: route.location.split('?').first,
+      matchedLocation: LocationBuilder.pathOnly(
+        definition.pattern,
+        route.pathParameters,
+      ),
       shellNavigatorId: shellNavigatorId,
     );
   }

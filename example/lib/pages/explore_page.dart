@@ -61,7 +61,7 @@ class ExplorePage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          UserRoute(id: user.id).location,
+                          Routes.user(id: user.id).location,
                           style: const TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 11,
@@ -71,7 +71,7 @@ class ExplorePage extends StatelessWidget {
                         const Icon(Icons.chevron_right, size: 18),
                       ],
                     ),
-                    onTap: () => context.go(UserRoute(id: user.id)),
+                    onTap: () => context.flow(Routes.user(id: user.id)),
                   ),
                 ),
               );

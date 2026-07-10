@@ -14,75 +14,50 @@ FlowRouter createRouter() {
   return FlowRouter(
     initialLocation: '/home',
     routes: [
-      FlowLeafNode(
-        FlowRouteDefinition<HomeRoute>(
-          name: 'home',
-          pathTemplate: '/home',
-          pageKey: 'main-tabs',
-          builder: (context, route) => const MainTabScaffold(),
-          factory: (_) => const HomeRoute(),
-          transition: const FlowTransition.none(),
-        ),
+      flow(
+        '/home',
+        name: 'home',
+        pageKey: 'main-tabs',
+        builder: (context, route) => const MainTabScaffold(),
+        transition: const FlowTransition.none(),
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<ExploreRoute>(
-          name: 'explore',
-          pathTemplate: '/explore',
-          pageKey: 'main-tabs',
-          builder: (context, route) => const MainTabScaffold(),
-          factory: (_) => const ExploreRoute(),
-          transition: const FlowTransition.none(),
-        ),
+      flow(
+        '/explore',
+        name: 'explore',
+        pageKey: 'main-tabs',
+        builder: (context, route) => const MainTabScaffold(),
+        transition: const FlowTransition.none(),
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<ProfileRoute>(
-          name: 'profile',
-          pathTemplate: '/profile',
-          pageKey: 'main-tabs',
-          builder: (context, route) => const MainTabScaffold(),
-          factory: (_) => const ProfileRoute(),
-          transition: const FlowTransition.none(),
-        ),
+      flow(
+        '/profile',
+        name: 'profile',
+        pageKey: 'main-tabs',
+        builder: (context, route) => const MainTabScaffold(),
+        transition: const FlowTransition.none(),
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<UserRoute>(
-          name: 'user',
-          pathTemplate: '/users/:id',
-          builder: (context, route) => UserPage(route: route),
-          factory: (params) {
-            final tabName = params['tab'];
-            final tab = UserTab.values.asNameMap()[tabName] ?? UserTab.overview;
-            return UserRoute(id: int.parse(params['id']!), tab: tab);
-          },
-          transition: const FlowTransition.slide(),
-        ),
+      flow(
+        '/users/:id',
+        name: 'user',
+        builder: (context, route) => UserPage(route: route),
+        transition: const FlowTransition.slide(),
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<SettingsRoute>(
-          name: 'settings',
-          pathTemplate: '/settings',
-          builder: (context, route) => const SettingsPage(),
-          factory: (_) => const SettingsRoute(),
-          guards: const [SettingsGuard()],
-        ),
+      flow(
+        '/settings',
+        name: 'settings',
+        builder: (context, route) => const SettingsPage(),
+        guards: const [SettingsGuard()],
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<LoginRoute>(
-          name: 'login',
-          pathTemplate: '/login',
-          builder: (context, route) => LoginPage(route: route),
-          factory: (params) => LoginRoute(returnTo: params['returnTo']),
-          transition: const FlowTransition.fade(),
-        ),
+      flow(
+        '/login',
+        name: 'login',
+        builder: (context, route) => LoginPage(route: route),
+        transition: const FlowTransition.fade(),
       ),
-      FlowLeafNode(
-        FlowRouteDefinition<AboutRoute>(
-          name: 'about',
-          pathTemplate: '/about',
-          builder: (context, route) => const AboutPage(),
-          factory: (_) => const AboutRoute(),
-          transition: const FlowTransition.slide(),
-        ),
+      flow(
+        '/about',
+        name: 'about',
+        builder: (context, route) => const AboutPage(),
+        transition: const FlowTransition.slide(),
       ),
     ],
     guards: const [AuthGuard()],
@@ -98,7 +73,7 @@ FlowRouter createRouter() {
             Text('Page not found: ${state.location}'),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: () => context.go(const HomeRoute()),
+              onPressed: () => context.flow(Routes.home),
               child: const Text('Go Home'),
             ),
           ],

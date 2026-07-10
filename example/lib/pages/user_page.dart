@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 class UserPage extends StatefulWidget {
   const UserPage({required this.route, super.key});
 
-  final UserRoute route;
+  final FlowRoute route;
 
   @override
   State<UserPage> createState() => _UserPageState();
@@ -15,29 +15,38 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage> {
   late UserTab _tab;
+  late int _userId;
 
   @override
   void initState() {
     super.initState();
-    _tab = widget.route.tab;
+    _syncFromRoute();
   }
 
   @override
   void didUpdateWidget(covariant UserPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.route.id != widget.route.id ||
-        oldWidget.route.tab != widget.route.tab) {
-      _tab = widget.route.tab;
+    if (oldWidget.route != widget.route) {
+      _syncFromRoute();
     }
+  }
+
+  void _syncFromRoute() {
+    _userId = widget.route.intPathParam('id');
+    _tab = _tabFromRoute(widget.route);
+  }
+
+  UserTab _tabFromRoute(FlowRoute route) {
+    final tabName = route.queryParam('tab');
+    return UserTab.values.asNameMap()[tabName] ?? UserTab.overview;
   }
 
   void _selectTab(UserTab tab) {
     if (_tab == tab) return;
     setState(() => _tab = tab);
-    // Sync URL without a full page transition.
     Router.neglect(
       context,
-      () => context.replace(UserRoute(id: widget.route.id, tab: tab)),
+      () => context.replace(Routes.user(id: _userId, tab: tab)),
     );
   }
 
@@ -61,7 +70,7 @@ class _UserPageState extends State<UserPage> {
                     ),
                     Expanded(
                       child: Text(
-                        'User #${widget.route.id}',
+                        'User #$_userId',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -70,10 +79,8 @@ class _UserPageState extends State<UserPage> {
                     IconButton(
                       icon: const Icon(Icons.share_outlined),
                       onPressed: () {
-                        final location = UserRoute(
-                          id: widget.route.id,
-                          tab: _tab,
-                        ).location;
+                        final location = Routes.user(id: _userId, tab: _tab)
+                            .location;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Share: $location')),
                         );
@@ -146,18 +153,12 @@ class _UserPageState extends State<UserPage> {
                           const SizedBox(height: 16),
                           _InfoRow(
                             label: 'Location',
-                            value: UserRoute(
-                              id: widget.route.id,
-                              tab: _tab,
-                            ).location,
+                            value: Routes.user(id: _userId, tab: _tab).location,
                           ),
-                          _InfoRow(
-                            label: 'User ID',
-                            value: '${widget.route.id}',
-                          ),
+                          _InfoRow(label: 'User ID', value: '$_userId'),
                           _InfoRow(label: 'Tab', value: _tab.name),
                           const Spacer(),
-                          _TabBody(tab: _tab, userId: widget.route.id),
+                          _TabBody(tab: _tab, userId: _userId),
                         ],
                       ),
                     ),

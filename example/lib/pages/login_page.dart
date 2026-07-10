@@ -8,10 +8,12 @@ import '../theme/app_theme.dart';
 class LoginPage extends StatelessWidget {
   const LoginPage({required this.route, super.key});
 
-  final LoginRoute route;
+  final FlowRoute route;
 
   @override
   Widget build(BuildContext context) {
+    final returnTo = route.queryParam('returnTo');
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -53,10 +55,10 @@ class LoginPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(color: FlowColors.textSecondary),
                         ),
-                        if (route.returnTo != null) ...[
+                        if (returnTo != null) ...[
                           const SizedBox(height: 16),
                           Text(
-                            'Return to: ${route.returnTo}',
+                            'Return to: $returnTo',
                             style: const TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 12,
@@ -70,14 +72,12 @@ class LoginPage extends StatelessWidget {
                           child: FilledButton(
                             onPressed: () {
                               authState.login();
-                              final returnTo = route.returnTo;
                               if (returnTo != null && returnTo.isNotEmpty) {
-                                // Navigate back via engine for deep return paths
-                                context.flow.engine.dispatch(
+                                context.flowRouter.engine.dispatch(
                                   SetLocationIntent(returnTo),
                                 );
                               } else {
-                                context.go(const HomeRoute());
+                                context.flow(Routes.home);
                               }
                             },
                             child: const Text('Sign In'),
@@ -85,7 +85,7 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         TextButton(
-                          onPressed: () => context.go(const HomeRoute()),
+                          onPressed: () => context.flow(Routes.home),
                           child: const Text('Continue as Guest'),
                         ),
                       ],

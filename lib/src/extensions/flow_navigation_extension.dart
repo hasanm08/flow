@@ -4,28 +4,76 @@ import '../core/flow_router.dart';
 import '../core/flow_router_scope.dart';
 import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
+import '../utils/flow_exceptions.dart';
 
-/// Extension methods for navigation from [BuildContext].
+/// Navigation and router access from [BuildContext].
 extension FlowNavigation on BuildContext {
   /// The nearest [FlowRouter].
-  FlowRouter get flow => FlowRouterScope.of(this);
+  FlowRouter get flowRouter => FlowRouterScope.of(this);
 
-  Future<void> go(FlowRoute route, {Object? extra}) =>
-      flow.go(route, extra: extra, context: this);
+  /// Current URL location.
+  String get location => flowRouter.location;
 
-  Future<void> push(FlowRoute route, {Object? extra}) =>
-      flow.push(route, extra: extra, context: this);
+  /// Read-only navigation state.
+  FlowRouteState get routeState => flowRouter.state;
+
+  bool canPop() => flowRouter.canPop();
+
+  /// Navigate with a route instance.
+  ///
+  /// ```dart
+  /// context.flow(Routes.home);                    // go
+  /// context.flow(Routes.about, push: true);       // push overlay
+  /// ```
+  Future<void> flow(
+    FlowRoute route, {
+    bool push = false,
+    Object? extra,
+  }) {
+    if (push) {
+      return flowRouter.push(route, extra: extra, context: this);
+    }
+    return flowRouter.go(route, extra: extra, context: this);
+  }
+
+  /// Navigate by route name (`goNamed` / `pushNamed` equivalent).
+  ///
+  /// ```dart
+  /// context.flowNamed('user', pathParameters: {'id': '42'});
+  /// context.flowNamed('about', push: true);
+  /// ```
+  Future<void> flowNamed(
+    String name, {
+    Map<String, String> pathParameters = const {},
+    Map<String, String> queryParameters = const {},
+    String? fragment,
+    bool push = false,
+    Object? extra,
+  }) {
+    final definition = flowRouter.registry.findDefinitionByName(name);
+    if (definition == null) {
+      throw FlowNotFoundException('No route named "$name"');
+    }
+    return flow(
+      FlowRoute(
+        name: name,
+        pathTemplate: definition.pathTemplate,
+        pathParameters: pathParameters,
+        queryParameters: queryParameters,
+        fragment: fragment,
+      ),
+      push: push,
+      extra: extra,
+    );
+  }
 
   Future<void> replace(FlowRoute route, {Object? extra}) =>
-      flow.replace(route, extra: extra, context: this);
-
-  Future<Object?> pop([Object? result]) =>
-      flow.pop(context: this, result: result);
+      flowRouter.replace(route, extra: extra, context: this);
 
   Future<void> popUntil(FlowRoute route, {bool inclusive = false}) =>
-      flow.popUntil(route, inclusive: inclusive, context: this);
+      flowRouter.popUntil(route, inclusive: inclusive, context: this);
 
-  bool canPop() => flow.canPop();
-
-  FlowRouteState get routeState => flow.state;
+  /// Pop from overlay or location stack.
+  Future<Object?> pop([Object? result]) =>
+      flowRouter.pop(context: this, result: result);
 }

@@ -1,17 +1,19 @@
 /// Compiled path pattern for route matching.
 final class PathPattern {
-  const PathPattern(this.template, this.segments);
+  const PathPattern(this.template, this.segments, this.pathParamNames);
 
   factory PathPattern.parse(String template) {
     final normalized = template == '/' ? '' : template;
     final parts = normalized.split('/').where((s) => s.isNotEmpty).toList();
     final segments = <PathSegment>[];
+    final pathParamNames = <String>{};
 
     for (final part in parts) {
       if (part.startsWith(':')) {
         final optional = part.endsWith('?');
         final name = part.substring(1).replaceAll('?', '');
         segments.add(PathParamSegment(name, optional: optional));
+        pathParamNames.add(name);
       } else if (part == '*') {
         segments.add(const WildcardSegment());
       } else {
@@ -19,11 +21,14 @@ final class PathPattern {
       }
     }
 
-    return PathPattern(template, segments);
+    return PathPattern(template, segments, pathParamNames);
   }
 
   final String template;
   final List<PathSegment> segments;
+
+  /// Precomputed at parse time — avoids per-factory Set allocation.
+  final Set<String> pathParamNames;
 
   int get length => segments.length;
 }

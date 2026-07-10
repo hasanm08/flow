@@ -6,32 +6,22 @@ Flow is a typed, declarative Flutter router built on Navigator 2.0.
 
 ```yaml
 dependencies:
-  flow_routing: ^1.0.0
+  flow_routing: ^2.0.0
 ```
 
 ## Quick Start
 
-### 1. Define typed routes
+### 1. Define route instances
 
 ```dart
-final class HomeRoute extends FlowRoute {
-  const HomeRoute();
-  @override
-  String get name => 'home';
-  @override
-  String get pathTemplate => '/';
-}
+abstract final class Routes {
+  static const home = FlowRoute(name: 'home', pathTemplate: '/');
 
-final class UserRoute extends FlowRoute {
-  const UserRoute({required this.id});
-  final int id;
-
-  @override
-  String get name => 'user';
-  @override
-  String get pathTemplate => '/users/:id';
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
+  static FlowRoute user({required int id}) => FlowRoute(
+    name: 'user',
+    pathTemplate: '/users/:id',
+    pathParameters: {'id': '$id'},
+  );
 }
 ```
 
@@ -40,21 +30,11 @@ final class UserRoute extends FlowRoute {
 ```dart
 final router = FlowRouter(
   routes: [
-    FlowLeafNode(
-      FlowRouteDefinition<HomeRoute>(
-        name: 'home',
-        pathTemplate: '/',
-        builder: (context, route) => const HomePage(),
-        factory: (_) => const HomeRoute(),
-      ),
-    ),
-    FlowLeafNode(
-      FlowRouteDefinition<UserRoute>(
-        name: 'user',
-        pathTemplate: '/users/:id',
-        builder: (context, route) => UserPage(id: route.id),
-        factory: (params) => UserRoute(id: int.parse(params['id']!)),
-      ),
+    flow('/', name: 'home', builder: (context, route) => const HomePage()),
+    flow(
+      '/users/:id',
+      name: 'user',
+      builder: (context, route) => UserPage(id: route.intPathParam('id')),
     ),
   ],
 );
@@ -71,12 +51,16 @@ void main() {
 ### 4. Navigate
 
 ```dart
-context.go(const HomeRoute());
-context.push(const UserRoute(id: 42));
+context.flow(Routes.home);
+context.flow(Routes.user(id: 42));
+context.flow(Routes.about, push: true);  // overlay — URL unchanged
 context.pop();
 
+// By name (goNamed / pushNamed equivalent)
+context.flowNamed('user', pathParameters: {'id': '42'});
+
 // Reverse routing — never build URLs manually
-UserRoute(id: 5).location; // → "/users/5"
+Routes.user(id: 5).location; // → "/users/5"
 ```
 
 ## Run the Example

@@ -31,9 +31,6 @@ final class FlowRouteInformationParser
 
   @override
   RouteInformation restoreRouteInformation(NavigationState configuration) {
-    final location = configuration.location;
-    return RouteInformation(
-      uri: Uri.parse(location.startsWith('/') ? location : '/$location'),
-    );
+    return RouteInformation(uri: configuration.uri);
   }
 }

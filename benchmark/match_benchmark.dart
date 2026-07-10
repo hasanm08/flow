@@ -6,13 +6,10 @@ import 'package:flow_routing/flow_routing.dart';
 /// Or this script: `flutter run benchmark/match_benchmark.dart` (requires Flutter)
 void main() {
   final routes = List.generate(100, (i) {
-    return FlowLeafNode(
-      FlowRouteDefinition<_BenchRoute>(
-        name: 'route_$i',
-        pathTemplate: '/section/$i/item/:id',
-        builder: (_, _) => throw UnimplementedError(),
-        factory: (params) => _BenchRoute(id: int.parse(params['id']!)),
-      ),
+    return flow(
+      '/section/$i/item/:id',
+      name: 'route_$i',
+      builder: (_, _) => throw UnimplementedError(),
     );
   });
 
@@ -30,15 +27,4 @@ void main() {
   print(
     'Flow MatchEngine: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)',
   );
-}
-
-final class _BenchRoute extends FlowRoute {
-  const _BenchRoute({required this.id});
-  final int id;
-  @override
-  String get name => 'bench';
-  @override
-  String get pathTemplate => '/section/:section/item/:id';
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
 }

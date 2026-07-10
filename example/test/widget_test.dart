@@ -18,7 +18,7 @@ void main() {
     await tester.pumpWidget(FlowDemoApp(router: router));
     await tester.pumpAndSettle();
 
-    await router.go(const UserRoute(id: 42));
+    await router.go(Routes.user(id: 42));
     await tester.pumpAndSettle();
 
     expect(find.text('User #42'), findsOneWidget);

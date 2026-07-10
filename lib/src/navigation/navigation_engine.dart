@@ -45,9 +45,6 @@ final class NavigationEngine extends ChangeNotifier {
   bool _isApplyingState = false;
 
   /// True while the engine is pushing a new state to the [Navigator].
-  ///
-  /// The delegate uses this to avoid handling [PopIntent] twice when
-  /// [Navigator.onDidRemovePage] fires for a state-driven page removal.
   bool get isApplyingState => _isApplyingState;
 
   NavigationState get state => _state;
@@ -80,7 +77,7 @@ final class NavigationEngine extends ChangeNotifier {
       location: navState.location,
       matchedRoutes: chain.matches.map((m) => m.route).toList(),
       pathParameters: chain.leaf?.pathParameters ?? const {},
-      queryParameters: Uri.splitQueryString(chain.uri.query),
+      queryParameters: chain.uri.queryParameters,
       extra: extra ?? navState.extra,
       error: chain.isEmpty ? const FlowNotFoundException('Not found') : null,
     );
@@ -145,6 +142,10 @@ final class NavigationEngine extends ChangeNotifier {
           next = await _setLocation(location, extra: extra);
       }
 
+      if (identical(next, previous)) {
+        return NavigationResult(state: _state, popResult: popResult);
+      }
+
       final middlewareContext = MiddlewareContext(
         previousState: previous,
         targetState: next,
@@ -156,7 +157,7 @@ final class NavigationEngine extends ChangeNotifier {
       );
 
       for (final m in middleware) {
-        await m.onBefore(middlewareContext);
+        await _runMiddlewareBefore(m, middlewareContext);
       }
 
       _applyState(next);
@@ -175,7 +176,7 @@ final class NavigationEngine extends ChangeNotifier {
       final result = NavigationResult(state: _state, popResult: popResult);
 
       for (final m in middleware) {
-        await m.onAfter(middlewareContext, result);
+        await _runMiddlewareAfter(m, middlewareContext, result);
       }
 
       return result;
@@ -192,7 +193,8 @@ final class NavigationEngine extends ChangeNotifier {
     final resolved = await _resolveWithGuards(route, context: context);
     if (resolved == null) return _state;
 
-    final result = _registry.engine.match(Uri.parse(resolved.location));
+    final result = _registry.matchTypedRoute(resolved) ??
+        _registry.engine.match(Uri.parse(resolved.location));
     if (result.isError) return _state;
 
     return NavigationState(
@@ -207,7 +209,8 @@ final class NavigationEngine extends ChangeNotifier {
     NavigatorId navigatorId = NavigatorId.root,
     Object? extra,
   }) {
-    final result = _registry.engine.match(Uri.parse(route.location));
+    final result = _registry.matchTypedRoute(route) ??
+        _registry.engine.match(Uri.parse(route.location));
     if (result.isError || result.chain.leaf == null) return _state;
 
     final match = result.chain.leaf!.copyWithRoute(route);
@@ -270,7 +273,8 @@ final class NavigationEngine extends ChangeNotifier {
     NavigatorId navigatorId = NavigatorId.root,
     Object? extra,
   }) {
-    final result = _registry.engine.match(Uri.parse(route.location));
+    final result = _registry.matchTypedRoute(route) ??
+        _registry.engine.match(Uri.parse(route.location));
     if (result.isError || result.chain.leaf == null) return _state;
 
     final chain = applyRouteToChain(result.chain, route);
@@ -353,13 +357,21 @@ final class NavigationEngine extends ChangeNotifier {
     FlowRoute route, {
     BuildContext? context,
   }) async {
+    if (guards.isEmpty) return route;
+
     var activeContext = context;
     var current = route;
     var redirectCount = 0;
 
     while (redirectCount < maxRedirects) {
-      final result = _registry.engine.match(Uri.parse(current.location));
+      final result = _registry.matchTypedRoute(current) ??
+          _registry.engine.match(Uri.parse(current.location));
       if (result.isError) return null;
+
+      final hasRouteGuards = result.chain.matches.any(
+        (m) => m.definition.guards.isNotEmpty,
+      );
+      if (!hasRouteGuards && guards.isEmpty) return current;
 
       final targetState = toRouteState(
         NavigationState(locationChain: result.chain),
@@ -367,19 +379,22 @@ final class NavigationEngine extends ChangeNotifier {
       final currentState = toRouteState(_state);
 
       var redirected = false;
-      for (final guard in [...guards, ..._collectRouteGuards(result.chain)]) {
-        final guardContext = GuardContext(
-          context: activeContext != null && activeContext.mounted
-              ? activeContext
-              : null,
-          currentState: currentState,
-          targetRoute: current,
-          targetState: targetState,
+
+      for (final guard in guards) {
+        final guardResult = await _runGuard(
+          guard,
+          GuardContext(
+            context: activeContext != null && activeContext.mounted
+                ? activeContext
+                : null,
+            currentState: currentState,
+            targetRoute: current,
+            targetState: targetState,
+          ),
         );
-        if (guardContext.context == null) {
+        if (activeContext != null && !activeContext.mounted) {
           activeContext = null;
         }
-        final guardResult = await guard.canActivate(guardContext);
         switch (guardResult) {
           case GuardAllow():
             break;
@@ -395,6 +410,40 @@ final class NavigationEngine extends ChangeNotifier {
         }
         if (redirected) break;
       }
+
+      if (!redirected) {
+        for (final match in result.chain.matches) {
+          for (final guard in match.definition.guards) {
+            final guardResult = await _runGuard(
+              guard,
+              GuardContext(
+                context: activeContext != null && activeContext.mounted
+                    ? activeContext
+                    : null,
+                currentState: currentState,
+                targetRoute: current,
+                targetState: targetState,
+              ),
+            );
+            switch (guardResult) {
+              case GuardAllow():
+                break;
+              case GuardBlock(:final reason):
+                throw FlowGuardBlockedException(
+                  'Navigation blocked',
+                  reason: reason,
+                );
+              case GuardRedirect(:final route):
+                current = route;
+                redirectCount++;
+                redirected = true;
+            }
+            if (redirected) break;
+          }
+          if (redirected) break;
+        }
+      }
+
       if (redirected) continue;
       return current;
     }
@@ -402,8 +451,26 @@ final class NavigationEngine extends ChangeNotifier {
     throw const FlowRedirectLoopException('Maximum redirect depth exceeded');
   }
 
-  List<FlowGuard> _collectRouteGuards(RouteMatchChain chain) {
-    return chain.matches.expand((m) => m.definition.guards).toList();
+  Future<GuardResult> _runGuard(FlowGuard guard, GuardContext context) async {
+    final result = guard.canActivate(context);
+    return result is Future<GuardResult> ? await result : result;
+  }
+
+  Future<void> _runMiddlewareBefore(
+    FlowMiddleware middleware,
+    MiddlewareContext context,
+  ) async {
+    final result = middleware.onBefore(context);
+    if (result is Future<void>) await result;
+  }
+
+  Future<void> _runMiddlewareAfter(
+    FlowMiddleware middleware,
+    MiddlewareContext context,
+    NavigationResult result,
+  ) async {
+    final after = middleware.onAfter(context, result);
+    if (after is Future<void>) await after;
   }
 
   bool canPop({NavigatorId navigatorId = NavigatorId.root}) {
@@ -414,6 +481,7 @@ final class NavigationEngine extends ChangeNotifier {
   }
 
   void _applyState(NavigationState next) {
+    if (_state == next) return;
     _isApplyingState = true;
     _state = next;
     notifyListeners();

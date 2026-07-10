@@ -10,29 +10,35 @@ import '../transitions/flow_transition.dart';
 import '../utils/flow_exceptions.dart';
 import '../typed_routes/flow_route.dart';
 
-typedef FlowRouteBuilder<T extends FlowRoute> =
-    Widget Function(BuildContext context, T route);
+typedef FlowRouteBuilder =
+    Widget Function(BuildContext context, FlowRoute route);
 
 typedef FlowRouteFactory = FlowRoute Function(Map<String, String> params);
 
-/// Declarative registration for a typed [FlowRoute].
-final class FlowRouteDefinition<T extends FlowRoute> {
+/// Declarative registration for a [FlowRoute] destination.
+final class FlowRouteDefinition {
   FlowRouteDefinition({
     required this.name,
     required this.pathTemplate,
     required this.builder,
-    required this.factory,
+    FlowRouteFactory? factory,
     this.guards = const [],
     this.transition = const FlowTransition.material(),
     this.parentNavigatorId,
     this.meta = const {},
     this.restorable = true,
     this.pageKey,
-  }) : pattern = PathPattern.parse(pathTemplate);
+  }) : pattern = PathPattern.parse(pathTemplate),
+       factory = factory ??
+           _defaultFactory(
+             name,
+             pathTemplate,
+             PathPattern.parse(pathTemplate),
+           );
 
   final String name;
   final String pathTemplate;
-  final FlowRouteBuilder<T> builder;
+  final FlowRouteBuilder builder;
   final FlowRouteFactory factory;
   final List<FlowGuard> guards;
   final FlowTransition transition;
@@ -44,9 +50,68 @@ final class FlowRouteDefinition<T extends FlowRoute> {
   /// Stable navigator page key shared by related routes (e.g. tab siblings).
   final String? pageKey;
 
-  Widget build(BuildContext context, FlowRoute route) {
-    return builder(context, route as T);
+  Widget build(BuildContext context, FlowRoute route) =>
+      builder(context, route);
+
+  static FlowRouteFactory _defaultFactory(
+    String name,
+    String pathTemplate,
+    PathPattern pattern,
+  ) {
+    final pathKeys = pattern.pathParamNames;
+    return (allParams) {
+      final pathParams = <String, String>{};
+      final queryParams = <String, String>{};
+      for (final entry in allParams.entries) {
+        if (pathKeys.contains(entry.key)) {
+          pathParams[entry.key] = entry.value;
+        } else {
+          queryParams[entry.key] = entry.value;
+        }
+      }
+      return FlowRoute(
+        name: name,
+        pathTemplate: pathTemplate,
+        pathParameters: pathParams,
+        queryParameters: queryParams,
+      );
+    };
   }
+}
+
+/// Declares a leaf route — the simplest way to register a destination.
+///
+/// ```dart
+/// flow('/users/:id', name: 'user', builder: (context, route) {
+///   return UserPage(id: route.intPathParam('id'));
+/// }),
+/// ```
+FlowLeafNode flow(
+  String pathTemplate, {
+  required String name,
+  required FlowRouteBuilder builder,
+  FlowRouteFactory? factory,
+  List<FlowGuard> guards = const [],
+  FlowTransition transition = const FlowTransition.material(),
+  NavigatorId? parentNavigatorId,
+  Map<String, Object?> meta = const {},
+  bool restorable = true,
+  String? pageKey,
+}) {
+  return FlowLeafNode(
+    FlowRouteDefinition(
+      name: name,
+      pathTemplate: pathTemplate,
+      builder: builder,
+      factory: factory,
+      guards: guards,
+      transition: transition,
+      parentNavigatorId: parentNavigatorId,
+      meta: meta,
+      restorable: restorable,
+      pageKey: pageKey,
+    ),
+  );
 }
 
 /// Base for shell route definitions.

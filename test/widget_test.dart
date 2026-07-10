@@ -6,14 +6,11 @@ void main() {
   testWidgets('FlowApp builds with router', (tester) async {
     final router = FlowRouter(
       routes: [
-        FlowLeafNode(
-          FlowRouteDefinition<_TestRoute>(
-            name: 'test',
-            pathTemplate: '/',
-            builder: (context, route) =>
-                const Scaffold(body: Center(child: Text('Hello Flow'))),
-            factory: (_) => const _TestRoute(),
-          ),
+        flow(
+          '/',
+          name: 'test',
+          builder: (context, route) =>
+              const Scaffold(body: Center(child: Text('Hello Flow'))),
         ),
       ],
     );
@@ -24,32 +21,28 @@ void main() {
     expect(find.text('Hello Flow'), findsOneWidget);
   });
 
-  testWidgets('context.go navigates', (tester) async {
+  testWidgets('context.flow navigates', (tester) async {
+    const detail = FlowRoute(name: 'detail', pathTemplate: '/detail');
+
     final router = FlowRouter(
       routes: [
-        FlowLeafNode(
-          FlowRouteDefinition<_HomeRoute>(
-            name: 'home',
-            pathTemplate: '/',
-            builder: (context, route) => Scaffold(
-              body: Center(
-                child: FilledButton(
-                  onPressed: () => context.go(const _DetailRoute()),
-                  child: const Text('Go'),
-                ),
+        flow(
+          '/',
+          name: 'home',
+          builder: (context, route) => Scaffold(
+            body: Center(
+              child: FilledButton(
+                onPressed: () => context.flow(detail),
+                child: const Text('Go'),
               ),
             ),
-            factory: (_) => const _HomeRoute(),
           ),
         ),
-        FlowLeafNode(
-          FlowRouteDefinition<_DetailRoute>(
-            name: 'detail',
-            pathTemplate: '/detail',
-            builder: (context, route) =>
-                const Scaffold(body: Center(child: Text('Detail'))),
-            factory: (_) => const _DetailRoute(),
-          ),
+        flow(
+          '/detail',
+          name: 'detail',
+          builder: (context, route) =>
+              const Scaffold(body: Center(child: Text('Detail'))),
         ),
       ],
     );
@@ -62,28 +55,4 @@ void main() {
 
     expect(find.text('Detail'), findsOneWidget);
   });
-}
-
-final class _TestRoute extends FlowRoute {
-  const _TestRoute();
-  @override
-  String get name => 'test';
-  @override
-  String get pathTemplate => '/';
-}
-
-final class _HomeRoute extends FlowRoute {
-  const _HomeRoute();
-  @override
-  String get name => 'home';
-  @override
-  String get pathTemplate => '/';
-}
-
-final class _DetailRoute extends FlowRoute {
-  const _DetailRoute();
-  @override
-  String get name => 'detail';
-  @override
-  String get pathTemplate => '/detail';
 }

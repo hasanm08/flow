@@ -1,4 +1,3 @@
-import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
 
 /// Converts a GoRouter-style path template to a Flow path template.
@@ -11,13 +10,13 @@ String migrateGoRouterPath(String path) {
 }
 
 /// Scaffold for creating a [FlowRouteDefinition] from a GoRouter path.
-FlowRouteDefinition<T> goRouterPathToDefinition<T extends FlowRoute>({
+FlowRouteDefinition goRouterPathToDefinition({
   required String name,
   required String path,
-  required FlowRouteBuilder<T> builder,
-  required FlowRouteFactory factory,
+  required FlowRouteBuilder builder,
+  FlowRouteFactory? factory,
 }) {
-  return FlowRouteDefinition<T>(
+  return FlowRouteDefinition(
     name: name,
     pathTemplate: migrateGoRouterPath(path),
     builder: builder,

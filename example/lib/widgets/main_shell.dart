@@ -22,7 +22,7 @@ class MainTabScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final index = indexForLocation(context.flow.location);
+    final index = indexForLocation(context.location);
 
     return Scaffold(
       body: Container(
@@ -40,11 +40,11 @@ class MainTabScaffold extends StatelessWidget {
         selectedIndex: index,
         onDestinationSelected: (i) {
           final route = switch (i) {
-            1 => const ExploreRoute(),
-            2 => const ProfileRoute(),
-            _ => const HomeRoute(),
+            1 => Routes.explore,
+            2 => Routes.profile,
+            _ => Routes.home,
           };
-          context.go(route);
+          context.flow(route);
         },
         destinations: const [
           NavigationDestination(

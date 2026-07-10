@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
             subtitle: 'The next-generation Flutter router',
             trailing: IconButton(
               icon: const Icon(Icons.info_outline, color: Colors.white),
-              onPressed: () => context.push(const AboutRoute()),
+              onPressed: () => context.flow(Routes.about, push: true),
             ),
           ),
         ),
@@ -32,29 +32,29 @@ class HomePage extends StatelessWidget {
                 icon: Icons.bolt,
                 title: 'Typed Navigation',
                 description:
-                    'Navigate with UserRoute(id: 42) — URLs auto-generated',
-                onTap: () => context.go(const UserRoute(id: 42)),
+                    'Navigate with Routes.user(id: 42) — URLs auto-generated',
+                onTap: () => context.flow(Routes.user(id: 42)),
               ),
               const SizedBox(height: 12),
               FeatureCard(
                 icon: Icons.shield_outlined,
                 title: 'Route Guards',
                 description: 'AuthGuard protects routes via pipeline',
-                onTap: () => context.go(const SettingsRoute()),
+                onTap: () => context.flow(Routes.settings),
               ),
               const SizedBox(height: 12),
               FeatureCard(
                 icon: Icons.layers_outlined,
                 title: 'Push & Overlay Stack',
                 description: 'Imperative push without changing URL',
-                onTap: () => context.push(const AboutRoute()),
+                onTap: () => context.flow(Routes.about, push: true),
               ),
               const SizedBox(height: 12),
               FeatureCard(
                 icon: Icons.public,
                 title: 'Web Ready',
                 description: 'Clean URLs, browser history, refresh-safe',
-                onTap: () => context.go(const ExploreRoute()),
+                onTap: () => context.flow(Routes.explore),
               ),
             ]),
           ),
@@ -69,7 +69,7 @@ class _LocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = context.flow.location;
+    final location = context.location;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -120,7 +120,7 @@ class _LocationCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Generated from ${const HomeRoute().runtimeType}',
+              'Generated from ${Routes.home.name} route',
               style: const TextStyle(
                 color: FlowColors.textSecondary,
                 fontSize: 12,

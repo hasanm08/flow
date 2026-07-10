@@ -6,6 +6,7 @@ import '../navigation/navigation_intent.dart';
 import '../navigation/navigation_state.dart';
 import '../page_builder/page_builder.dart';
 import '../typed_routes/flow_route_definition.dart';
+import '../web/imperative_url_policy.dart';
 import 'flow_router_scope.dart';
 
 /// Builds [Navigator] pages from [NavigationEngine] state.
@@ -24,6 +25,8 @@ final class FlowRouterDelegate extends RouterDelegate<NavigationState>
   final Widget Function(BuildContext, FlowRouteState)? errorBuilder;
   final PageBuilder _pageBuilder;
   bool _updatingFromPlatform = false;
+  Uri? _lastSyncedUri;
+  NavigationState? _lastBuiltState;
 
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -34,20 +37,29 @@ final class FlowRouterDelegate extends RouterDelegate<NavigationState>
   NavigationState get currentConfiguration => engine.state;
 
   void _onEngineChanged() {
+    final state = engine.state;
+    if (_lastBuiltState == state) return;
+    _lastBuiltState = state;
     notifyListeners();
     if (!_updatingFromPlatform) {
-      _syncPlatformUrl();
+      _syncPlatformUrl(state);
     }
   }
 
   /// Notifies the [Router] to rebuild the navigation stack.
   void rebuild() => notifyListeners();
 
-  void _syncPlatformUrl() {
-    final info = router.routeInformationParser.restoreRouteInformation(
-      engine.state,
+  void _syncPlatformUrl(NavigationState state) {
+    final policy = router.imperativeUrlPolicy;
+    if (policy == ImperativeUrlPolicy.frozen) return;
+
+    final uri = state.uri;
+    if (_lastSyncedUri == uri) return;
+    _lastSyncedUri = uri;
+
+    router.routeInformationProvider.routerReportsNewRouteInformation(
+      RouteInformation(uri: uri),
     );
-    router.routeInformationProvider.routerReportsNewRouteInformation(info);
   }
 
   @override
@@ -82,6 +94,7 @@ final class FlowRouterDelegate extends RouterDelegate<NavigationState>
   Future<void> setNewRoutePath(NavigationState configuration) async {
     _updatingFromPlatform = true;
     engine.setState(configuration);
+    _lastSyncedUri = configuration.uri;
     _updatingFromPlatform = false;
   }
 

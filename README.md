@@ -5,15 +5,16 @@
 
 Published on pub.dev as [`flow_routing`](https://pub.dev/packages/flow_routing).
 
-[![version](https://img.shields.io/badge/version-1.0.2-indigo)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.0.0-indigo)](CHANGELOG.md)
 [![flutter](https://img.shields.io/badge/flutter-%3E%3D3.12-blue)](https://flutter.dev)
 
 ```dart
-context.go(HomeRoute());
-context.push(UserRoute(id: 42, tab: UserTab.profile));
+context.flow(Routes.home);
+context.flow(Routes.user(id: 42));
+context.flow(Routes.about, push: true);
 context.pop();
 
-UserRoute(id: 5).location; // → "/users/5?tab=profile"
+Routes.user(id: 5).location; // → "/users/5"
 ```
 
 ## Why Flow?
@@ -29,11 +30,12 @@ UserRoute(id: 5).location; // → "/users/5?tab=profile"
 
 ## Features
 
-- **Typed routes** — `UserRoute(id: 42)` not `'/users/42'`
+- **Instance routes** — `Routes.user(id: 42)` not `'/users/42'`
+- **Unified navigation** — `context.flow()` for go and push; `context.pop()` to go back
 - **Reverse routing** — URLs generated automatically via `.location`
 - **Pipeline guards** — composable auth, roles, async validation
 - **Middleware** — logging, analytics, localization hooks
-- **Separated stacks** — declarative `go` vs imperative `push` overlays
+- **Separated stacks** — declarative `flow` vs overlay `flow(..., push: true)`
 - **Web support** — clean URLs, browser history, refresh-safe parsing
 - **Transitions** — material, fade, slide, none
 - **Shell routes** — nested navigation and tab branches
@@ -44,20 +46,19 @@ UserRoute(id: 5).location; // → "/users/5?tab=profile"
 
 ```yaml
 dependencies:
-  flow_routing: ^1.0.0
+  flow_routing: ^2.0.0
 ```
 
 ```dart
 import 'package:flow_routing/flow_routing.dart';
 
+abstract final class Routes {
+  static const home = FlowRoute(name: 'home', pathTemplate: '/');
+}
+
 final router = FlowRouter(
   routes: [
-    FlowLeafNode(FlowRouteDefinition<HomeRoute>(
-      name: 'home',
-      pathTemplate: '/',
-      builder: (context, route) => const HomePage(),
-      factory: (_) => const HomeRoute(),
-    )),
+    flow('/', name: 'home', builder: (context, route) => const HomePage()),
   ],
 );
 

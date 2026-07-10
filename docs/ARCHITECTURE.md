@@ -65,7 +65,7 @@ Navigation API → mutate RouteMatchList → optionally sync URL
 
 | Weakness | Impact |
 |----------|--------|
-| **String-first API** | `context.go('/users/42')` — no compile-time safety |
+| **String-first API** | `context.flowNamed('user', pathParameters: {'id': '42'})` — prefer typed instances |
 | **RouteMatchList as dual state** | Same structure represents declarative location AND imperative overlay stack; `optionURLReflectsImperativeAPIs` is a compatibility hack |
 | **ImperativeRouteMatch lifecycle** | Race conditions on iOS interactive pop, `complete()` without guards (#187326) |
 | **Redirect as string return** | Cannot express push-vs-go intent (#188782); recursive redirect gaps (#188014) |
@@ -165,7 +165,7 @@ The URL is an **output**, not an input, for programmatic navigation. URL input (
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         Application Layer                               │
-│  context.go(HomeRoute())  │  FlowRouter.config  │  FlowModule.register  │
+│  context.flow(Routes.home)  │  FlowRouter.config  │  FlowModule.register  │
 └───────────────────────────────────┬─────────────────────────────────────┘
                                     │
 ┌───────────────────────────────────▼─────────────────────────────────────┐
@@ -726,11 +726,16 @@ test('cold start deep link', () {
 GoRoute(path: '/users/:id', builder: (c, s) => UserPage(id: s.pathParameters['id']!))
 
 // Flow
-class UserRoute extends FlowRoute { ... }
-FlowRouteDefinition<UserRoute>(
-  route: UserRoute,
-  builder: (context, route) => UserPage(id: route.id),
-)
+abstract final class Routes {
+  static FlowRoute user({required int id}) => FlowRoute(
+    name: 'user',
+    pathTemplate: '/users/:id',
+    pathParameters: {'id': '$id'},
+  );
+}
+flow('/users/:id', name: 'user', builder: (context, route) {
+  return UserPage(id: route.intPathParam('id'));
+})
 ```
 
 Migration utility (`flow_migration` package):

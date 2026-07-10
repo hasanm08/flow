@@ -31,7 +31,7 @@ FlowApp.router(router: router, title: 'My App', theme: theme)
 
 ### `FlowRoute`
 
-Abstract base class. Subclass per destination.
+Concrete route instance — no subclass required.
 
 | Property | Description |
 |----------|-------------|
@@ -40,20 +40,30 @@ Abstract base class. Subclass per destination.
 | `pathParameters` | Path param values |
 | `queryParameters` | Query param values |
 | `fragment` | URI fragment |
+| `extra` | Optional navigation payload |
 | `location` | Canonical URL (computed) |
 
-### `FlowRouteDefinition<T>`
+### `flow()`
 
-Binds a route type to a page builder.
+Top-level helper to register a leaf route.
+
+```dart
+flow('/users/:id', name: 'user', builder: (context, route) => UserPage(route: route))
+```
+
+### `FlowRouteDefinition`
+
+Binds a route name to a page builder. `factory` is optional (auto-generated from path params).
 
 | Parameter | Description |
 |-----------|-------------|
 | `name` | Route name |
 | `pathTemplate` | URL pattern |
 | `builder` | `(context, route) => Widget` |
-| `factory` | `Map<String,String> => FlowRoute` |
+| `factory` | Optional `Map<String,String> => FlowRoute` |
 | `guards` | Per-route guards |
 | `transition` | `FlowTransition` |
+| `pageKey` | Shared navigator key for tab siblings |
 | `restorable` | State restoration flag |
 
 ## Navigation
@@ -61,17 +71,38 @@ Binds a route type to a page builder.
 ### `BuildContext` extensions
 
 ```dart
-context.flow          // FlowRouter
-context.go(route)
-context.push(route)
-context.replace(route)
-context.pop([result])
-context.popUntil(route)
-context.canPop()
-context.routeState    // FlowRouteState
+// Navigate with a route instance
+context.flow(Routes.home);                         // go
+context.flow(Routes.about, push: true);            // push overlay
+context.flow(Routes.user(id: 42), extra: data);  // with extra payload
+
+// Navigate by name (goNamed / pushNamed equivalent)
+context.flowNamed('user', pathParameters: {'id': '42'});
+context.flowNamed('about', push: true);
+
+// Pop & stack utilities
+context.pop([result]);
+context.replace(route);
+context.popUntil(route);
+
+// Read state
+context.flowRouter      // FlowRouter
+context.location        // current URL
+context.routeState      // FlowRouteState
+context.canPop();
+```
+
+### Route parameter helpers
+
+```dart
+route.intPathParam('id');
+route.queryParam('tab');
+route.isName('login');
 ```
 
 ### `FlowNavigationMode`
+
+Used internally by guards and redirects:
 
 - `go` — replace location stack
 - `push` — overlay stack
@@ -99,7 +130,7 @@ abstract class FlowGuard {
 ```dart
 RedirectGuard(
   condition: (ctx) => !isLoggedIn,
-  redirectTo: (ctx) => LoginRoute(returnTo: ctx.targetRoute.location),
+  redirectTo: (ctx) => Routes.loginWithReturn(ctx.targetRoute.location),
 )
 ```
 
@@ -157,7 +188,7 @@ Records intents without widget tree.
 
 ```dart
 final fake = FakeFlowRouter();
-await fake.go(const HomeRoute());
+await fake.go(Routes.home);
 expect(fake.hasGoIntents, isTrue);
 ```
 

@@ -3,83 +3,36 @@ import 'package:flow_routing/flow_routing.dart';
 /// Tab values for user profile routes.
 enum UserTab { overview, activity, settings }
 
-/// Home dashboard route.
-final class HomeRoute extends FlowRoute {
-  const HomeRoute();
-  @override
-  String get name => 'home';
-  @override
-  String get pathTemplate => '/home';
-}
+/// App route instances — no classes, just values.
+///
+/// ```dart
+/// context.flow(Routes.home);
+/// context.flow(Routes.user(id: 42));
+/// context.flowNamed('user', pathParameters: {'id': '42'});
+/// ```
+abstract final class Routes {
+  Routes._();
 
-/// Explore / discovery route.
-final class ExploreRoute extends FlowRoute {
-  const ExploreRoute();
-  @override
-  String get name => 'explore';
-  @override
-  String get pathTemplate => '/explore';
-}
+  static const home = FlowRoute(name: 'home', pathTemplate: '/home');
+  static const explore = FlowRoute(name: 'explore', pathTemplate: '/explore');
+  static const profile = FlowRoute(name: 'profile', pathTemplate: '/profile');
+  static const settings = FlowRoute(name: 'settings', pathTemplate: '/settings');
+  static const about = FlowRoute(name: 'about', pathTemplate: '/about');
+  static const login = FlowRoute(name: 'login', pathTemplate: '/login');
 
-/// User profile list route.
-final class ProfileRoute extends FlowRoute {
-  const ProfileRoute();
-  @override
-  String get name => 'profile';
-  @override
-  String get pathTemplate => '/profile';
-}
+  static FlowRoute user({required int id, UserTab tab = UserTab.overview}) =>
+      FlowRoute(
+        name: 'user',
+        pathTemplate: '/users/:id',
+        pathParameters: {'id': '$id'},
+        queryParameters: tab == UserTab.overview
+            ? const {}
+            : {'tab': tab.name},
+      );
 
-/// User detail route with typed parameters.
-final class UserRoute extends FlowRoute {
-  const UserRoute({required this.id, this.tab = UserTab.overview});
-
-  final int id;
-  final UserTab tab;
-
-  @override
-  String get name => 'user';
-
-  @override
-  String get pathTemplate => '/users/:id';
-
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
-
-  @override
-  Map<String, String> get queryParameters =>
-      tab == UserTab.overview ? const {} : {'tab': tab.name};
-}
-
-/// App settings route.
-final class SettingsRoute extends FlowRoute {
-  const SettingsRoute();
-  @override
-  String get name => 'settings';
-  @override
-  String get pathTemplate => '/settings';
-}
-
-/// Login route for auth guard demo.
-final class LoginRoute extends FlowRoute {
-  const LoginRoute({this.returnTo});
-  final String? returnTo;
-
-  @override
-  String get name => 'login';
-  @override
-  String get pathTemplate => '/login';
-
-  @override
-  Map<String, String> get queryParameters =>
-      returnTo == null ? const {} : {'returnTo': returnTo!};
-}
-
-/// About / info route (pushed as overlay).
-final class AboutRoute extends FlowRoute {
-  const AboutRoute();
-  @override
-  String get name => 'about';
-  @override
-  String get pathTemplate => '/about';
+  static FlowRoute loginWithReturn(String returnTo) => FlowRoute(
+    name: 'login',
+    pathTemplate: '/login',
+    queryParameters: {'returnTo': returnTo},
+  );
 }

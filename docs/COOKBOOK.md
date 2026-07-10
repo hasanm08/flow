@@ -4,8 +4,9 @@
 
 ```dart
 final authGuard = RedirectGuard(
-  condition: (ctx) => !authService.isLoggedIn && ctx.targetRoute is! LoginRoute,
-  redirectTo: (ctx) => LoginRoute(returnTo: ctx.targetRoute.location),
+  condition: (ctx) =>
+      !authService.isLoggedIn && !ctx.targetRoute.isName('login'),
+  redirectTo: (ctx) => Routes.loginWithReturn(ctx.targetRoute.location),
 );
 
 FlowRouter(routes: [...], guards: [authGuard]);
@@ -27,8 +28,10 @@ class RoleGuard extends FlowGuard {
 ## Custom Transition
 
 ```dart
-FlowRouteDefinition<DetailRoute>(
-  ...
+flow(
+  '/detail',
+  name: 'detail',
+  builder: (context, route) => const DetailPage(),
   transition: const FlowTransition.slide(),
 )
 ```
@@ -36,8 +39,16 @@ FlowRouteDefinition<DetailRoute>(
 ## Push Modal Without URL Change
 
 ```dart
-context.push(const AboutRoute());
+context.flow(Routes.about, push: true);
 // URL stays at current location (declarativeOnly policy)
+context.pop();
+```
+
+## Navigate by Name
+
+```dart
+context.flowNamed('user', pathParameters: {'id': '42'});
+context.flowNamed('about', push: true);
 ```
 
 ## Refresh on Auth Change
@@ -70,17 +81,13 @@ FlowRouter(
 ## Query Parameters
 
 ```dart
-final class SearchRoute extends FlowRoute {
-  const SearchRoute({required this.query});
-  final String query;
+static FlowRoute search({required String query}) => FlowRoute(
+  name: 'search',
+  pathTemplate: '/search',
+  queryParameters: {'q': query},
+);
 
-  @override
-  String get pathTemplate => '/search';
-  @override
-  Map<String, String> get queryParameters => {'q': query};
-}
-
-// location → "/search?q=flutter"
+// Routes.search(query: 'flutter').location → "/search?q=flutter"
 ```
 
 ## Testing Navigation
@@ -89,7 +96,7 @@ final class SearchRoute extends FlowRoute {
 test('navigates to user', () async {
   final registry = RouteRegistry(routes: testRoutes);
   final engine = NavigationEngine(registry: registry);
-  await engine.dispatch(const GoIntent(UserRoute(id: 1)));
+  await engine.dispatch(GoIntent(Routes.user(id: 1)));
   expect(engine.state.location, '/users/1');
 });
 ```

@@ -58,13 +58,13 @@ class ProfilePage extends StatelessWidget {
               _ActionTile(
                 icon: Icons.settings_outlined,
                 label: 'Settings',
-                onTap: () => context.go(const SettingsRoute()),
+                onTap: () => context.flow(Routes.settings),
               ),
               _ActionTile(
                 icon: Icons.person_outline,
                 label: 'View My Profile',
-                subtitle: const UserRoute(id: 42).location,
-                onTap: () => context.go(const UserRoute(id: 42)),
+                subtitle: Routes.user(id: 42).location,
+                onTap: () => context.flow(Routes.user(id: 42)),
               ),
               _ActionTile(
                 icon: authState.isLoggedIn ? Icons.logout : Icons.login,
@@ -72,9 +72,9 @@ class ProfilePage extends StatelessWidget {
                 onTap: () {
                   if (authState.isLoggedIn) {
                     authState.logout();
-                    context.go(const LoginRoute());
+                    context.flow(Routes.login);
                   } else {
-                    context.go(const LoginRoute(returnTo: '/profile'));
+                    context.flow(Routes.loginWithReturn('/profile'));
                   }
                 },
               ),

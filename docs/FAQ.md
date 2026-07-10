@@ -6,16 +6,17 @@ Flow uses **typed routes as the source of truth** with separated declarative/ove
 
 ## Do I need code generation?
 
-No. Define `FlowRoute` subclasses manually. Optional `flow_generator` may come in future releases.
+No. Define route instances in a `Routes` class. Optional `flow_generator` may come in future releases.
 
 ## Can I use string paths?
 
-Flow is designed for typed routes. For legacy strings, use `SetLocationIntent` or migration helpers.
+Flow is designed for typed routes. Use `context.flowNamed()` for name-based navigation, or `SetLocationIntent` for raw URL strings.
 
-## How does `go` differ from `push`?
+## How does `flow` differ from `flow(..., push: true)`?
 
-- **`go`** — replaces the location stack; clears overlays
-- **`push`** — adds to overlay stack; URL unchanged by default
+- **`context.flow(route)`** — replaces the location stack; clears overlays; updates URL
+- **`context.flow(route, push: true)`** — adds to overlay stack; URL unchanged by default
+- **`context.pop()`** — dismisses overlay or goes back in history
 
 ## How do guards work?
 
@@ -35,8 +36,8 @@ See [MIGRATION.md](MIGRATION.md). Use `goRouterPathToDefinition()` for route sca
 
 ## What about shell routes / tabs?
 
-Use `FlowShellNode` or `FlowStatefulShellNode`, or a layout widget with `context.go` between tabs (see example app).
+Use `FlowShellNode` or `FlowStatefulShellNode`, or a layout widget with `context.flow` between tabs (see example app).
 
 ## How do I pass data between routes?
 
-Use typed route parameters, query parameters, or the `extra` argument on `go`/`push`.
+Use typed route parameters, query parameters, or the `extra` argument on `context.flow`.

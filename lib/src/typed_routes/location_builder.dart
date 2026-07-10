@@ -1,4 +1,5 @@
 import 'flow_route.dart';
+import '../matcher/path_pattern.dart';
 
 /// Builds canonical URL locations from [FlowRoute] instances.
 final class LocationBuilder {
@@ -23,21 +24,48 @@ final class LocationBuilder {
   final Map<String, String> queryParameters;
   final String? fragment;
 
+  /// Builds path only from a compiled [pattern] — no query string.
+  static String pathOnly(
+    PathPattern pattern,
+    Map<String, String> pathParameters,
+  ) {
+    if (pattern.segments.isEmpty) return '/';
+
+    final parts = <String>[];
+    for (final seg in pattern.segments) {
+      switch (seg) {
+        case LiteralSegment(:final value):
+          parts.add(value);
+        case PathParamSegment(:final name):
+          final value = pathParameters[name];
+          if (value != null) parts.add(value);
+        case WildcardSegment():
+          break;
+      }
+    }
+    return '/${parts.join('/')}';
+  }
+
   /// Builds a canonical location string.
   String build() {
     final path = _buildPath();
+    if (queryParameters.isEmpty && (fragment == null || fragment!.isEmpty)) {
+      return path;
+    }
+
     final buffer = StringBuffer(path);
 
     if (queryParameters.isNotEmpty) {
       buffer.write('?');
-      buffer.write(
-        queryParameters.entries
-            .map(
-              (e) =>
-                  '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}',
-            )
-            .join('&'),
-      );
+      var first = true;
+      for (final entry in queryParameters.entries) {
+        if (!first) buffer.write('&');
+        first = false;
+        buffer
+          ..write(Uri.encodeQueryComponent(entry.key))
+          ..write('=')
+          ..write(Uri.encodeQueryComponent(entry.value));
+      }
     }
 
     if (fragment != null && fragment!.isNotEmpty) {

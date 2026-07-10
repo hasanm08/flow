@@ -1,4 +1,6 @@
 import '../matcher/match_engine.dart';
+import '../matcher/route_match.dart';
+import '../typed_routes/flow_route.dart';
 import '../typed_routes/flow_route_definition.dart';
 
 /// Central registry of all route definitions.
@@ -20,6 +22,13 @@ final class RouteRegistry {
 
   FlowRouteDefinition? findDefinitionByName(String name) =>
       _definitionsByName[name];
+
+  /// Fast path for typed navigation — O(1) definition lookup + leaf match.
+  MatchResult? matchTypedRoute(FlowRoute route) {
+    final definition = findDefinitionByName(route.name);
+    if (definition == null) return null;
+    return _engine.matchLeaf(definition, route);
+  }
 
   static Map<String, FlowRouteDefinition> _buildDefinitionIndex(
     List<FlowRouteNode> nodes,

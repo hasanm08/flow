@@ -6,6 +6,7 @@ export 'src/core/flow_router.dart';
 export 'src/core/navigation_mode.dart' show FlowNavigationMode;
 export 'src/core/navigator_id.dart';
 export 'src/extensions/flow_navigation_extension.dart';
+export 'src/extensions/flow_route_extension.dart';
 export 'src/guards/flow_guard.dart';
 export 'src/matcher/match_engine.dart';
 export 'src/matcher/route_match.dart';

@@ -7,13 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('LocationBuilder', () {
     test('builds path from typed route', () {
-      expect(const UserRoute(id: 42).location, '/users/42');
+      expect(Routes.user(id: 42).location, '/users/42');
     });
 
     test('builds path with query parameters', () {
       expect(
-        const UserRoute(id: 5, tab: 'profile').location,
-        '/users/5?tab=profile',
+        Routes.user(id: 5, tab: UserTab.activity).location,
+        '/users/5?tab=activity',
       );
     });
   });
@@ -23,9 +23,9 @@ void main() {
 
     setUp(() {
       engine = MatchEngine([
-        FlowLeafNode(_homeDefinition),
-        FlowLeafNode(_userDefinition),
-        FlowLeafNode(_settingsDefinition),
+        _homeNode,
+        _userNode,
+        _settingsNode,
       ]);
     });
 
@@ -37,14 +37,13 @@ void main() {
     test('matches home path', () {
       final result = engine.match(Uri.parse('/home'));
       expect(result.isError, isFalse);
-      expect(result.chain.leaf?.route, isA<HomeRoute>());
+      expect(result.chain.leaf?.route.name, 'home');
     });
 
     test('matches parameterized path', () {
       final result = engine.match(Uri.parse('/users/99'));
       expect(result.isError, isFalse);
-      final route = result.chain.leaf!.route as UserRoute;
-      expect(route.id, 99);
+      expect(result.chain.leaf!.route.intPathParam('id'), 99);
     });
 
     test('returns error for unknown path', () {
@@ -60,10 +59,7 @@ void main() {
 
     test('parseRouteInformation handles explore deep link', () async {
       final registry = RouteRegistry(
-        routes: [
-          FlowLeafNode(_homeDefinition),
-          FlowLeafNode(_exploreDefinition),
-        ],
+        routes: [_homeNode, _exploreNode],
       );
       final engine = NavigationEngine(
         registry: registry,
@@ -78,10 +74,7 @@ void main() {
 
     test('restoreRouteInformation reflects navigation location', () async {
       final registry = RouteRegistry(
-        routes: [
-          FlowLeafNode(_homeDefinition),
-          FlowLeafNode(_exploreDefinition),
-        ],
+        routes: [_homeNode, _exploreNode],
         initialLocation: '/home',
       );
       final navEngine = NavigationEngine(
@@ -92,7 +85,7 @@ void main() {
 
       expect(parser.restoreRouteInformation(navEngine.state).uri.path, '/home');
 
-      await navEngine.dispatch(const GoIntent(ExploreRoute()));
+      await navEngine.dispatch(const GoIntent(Routes.explore));
       expect(
         parser.restoreRouteInformation(navEngine.state).uri.path,
         '/explore',
@@ -103,51 +96,47 @@ void main() {
 
     setUp(() {
       final registry = RouteRegistry(
-        routes: [
-          FlowLeafNode(_homeDefinition),
-          FlowLeafNode(_userDefinition),
-          FlowLeafNode(_settingsDefinition),
-        ],
+        routes: [_homeNode, _userNode, _settingsNode],
       );
       engine = NavigationEngine(registry: registry);
     });
 
     test('go replaces location stack', () async {
-      await engine.dispatch(const GoIntent(UserRoute(id: 1)));
+      await engine.dispatch(GoIntent(Routes.user(id: 1)));
       expect(engine.state.location, '/users/1');
-      await engine.dispatch(const GoIntent(SettingsRoute()));
+      await engine.dispatch(const GoIntent(Routes.settings));
       expect(engine.state.location, '/settings');
     });
 
     test('push adds overlay without changing location', () async {
-      await engine.dispatch(const GoIntent(HomeRoute()));
-      await engine.dispatch(const PushIntent(SettingsRoute()));
+      await engine.dispatch(const GoIntent(Routes.home));
+      await engine.dispatch(const PushIntent(Routes.settings));
       expect(engine.state.location, '/home');
       expect(engine.state.overlayFor('root').entries.length, 1);
     });
 
     test('pop removes overlay first', () async {
-      await engine.dispatch(const GoIntent(HomeRoute()));
-      await engine.dispatch(const PushIntent(SettingsRoute()));
+      await engine.dispatch(const GoIntent(Routes.home));
+      await engine.dispatch(const PushIntent(Routes.settings));
       await engine.dispatch(const PopIntent());
       expect(engine.state.overlayFor('root').isEmpty, isTrue);
     });
 
     test('pop uses history when stack has single route', () async {
-      await engine.dispatch(const GoIntent(HomeRoute()));
-      await engine.dispatch(const GoIntent(UserRoute(id: 1)));
+      await engine.dispatch(const GoIntent(Routes.home));
+      await engine.dispatch(GoIntent(Routes.user(id: 1)));
       expect(engine.state.location, '/users/1');
       await engine.dispatch(const PopIntent());
       expect(engine.state.location, '/home');
     });
 
     test('replace updates query parameters on route', () async {
-      await engine.dispatch(const GoIntent(UserRoute(id: 1)));
+      await engine.dispatch(GoIntent(Routes.user(id: 1)));
       await engine.dispatch(
-        const ReplaceIntent(UserRoute(id: 1, tab: 'activity')),
+        ReplaceIntent(Routes.user(id: 1, tab: UserTab.activity)),
       );
-      final route = engine.state.locationChain.leaf!.route as UserRoute;
-      expect(route.tab, 'activity');
+      final route = engine.state.locationChain.leaf!.route;
+      expect(route.queryParam('tab'), 'activity');
       expect(engine.state.location, '/users/1?tab=activity');
     });
   });
@@ -155,7 +144,7 @@ void main() {
   group('RouteRegistry', () {
     test('findDefinitionByName resolves registered routes', () {
       final registry = RouteRegistry(
-        routes: [FlowLeafNode(_homeDefinition), FlowLeafNode(_userDefinition)],
+        routes: [_homeNode, _userNode],
       );
 
       expect(registry.findDefinitionByName('home'), isNotNull);
@@ -167,8 +156,8 @@ void main() {
   group('FakeFlowRouter', () {
     test('records navigation intents', () async {
       final fake = FakeFlowRouter();
-      await fake.go(const HomeRoute());
-      await fake.push(const UserRoute(id: 3));
+      await fake.go(Routes.home);
+      await fake.push(Routes.user(id: 3));
       expect(fake.hasGoIntents, isTrue);
       expect(fake.hasPushIntents, isTrue);
       expect(fake.intents.length, 2);
@@ -183,71 +172,50 @@ void main() {
   });
 }
 
-// Test routes
-final class HomeRoute extends FlowRoute {
-  const HomeRoute();
-  @override
-  String get name => 'home';
-  @override
-  String get pathTemplate => '/home';
+// Test route instances
+abstract final class Routes {
+  Routes._();
+
+  static const home = FlowRoute(name: 'home', pathTemplate: '/home');
+  static const explore = FlowRoute(name: 'explore', pathTemplate: '/explore');
+  static const settings = FlowRoute(
+    name: 'settings',
+    pathTemplate: '/settings',
+  );
+
+  static FlowRoute user({required int id, UserTab tab = UserTab.overview}) =>
+      FlowRoute(
+        name: 'user',
+        pathTemplate: '/users/:id',
+        pathParameters: {'id': '$id'},
+        queryParameters: tab == UserTab.overview
+            ? const {}
+            : {'tab': tab.name},
+      );
 }
 
-final class UserRoute extends FlowRoute {
-  const UserRoute({required this.id, this.tab = 'overview'});
-  final int id;
-  final String tab;
+enum UserTab { overview, activity, settings }
 
-  @override
-  String get name => 'user';
-  @override
-  String get pathTemplate => '/users/:id';
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
-  @override
-  Map<String, String> get queryParameters =>
-      tab == 'overview' ? const {} : {'tab': tab};
-}
-
-final class SettingsRoute extends FlowRoute {
-  const SettingsRoute();
-  @override
-  String get name => 'settings';
-  @override
-  String get pathTemplate => '/settings';
-}
-
-final class ExploreRoute extends FlowRoute {
-  const ExploreRoute();
-  @override
-  String get name => 'explore';
-  @override
-  String get pathTemplate => '/explore';
-}
-
-final _homeDefinition = FlowRouteDefinition<HomeRoute>(
+final _homeNode = flow(
+  '/home',
   name: 'home',
-  pathTemplate: '/home',
   builder: (context, route) => const SizedBox.shrink(),
-  factory: (_) => const HomeRoute(),
 );
 
-final _userDefinition = FlowRouteDefinition<UserRoute>(
+final _userNode = flow(
+  '/users/:id',
   name: 'user',
-  pathTemplate: '/users/:id',
   builder: (context, route) => const SizedBox.shrink(),
-  factory: (params) => UserRoute(id: int.parse(params['id']!)),
 );
 
-final _settingsDefinition = FlowRouteDefinition<SettingsRoute>(
+final _settingsNode = flow(
+  '/settings',
   name: 'settings',
-  pathTemplate: '/settings',
   builder: (context, route) => const SizedBox.shrink(),
-  factory: (_) => const SettingsRoute(),
 );
 
-final _exploreDefinition = FlowRouteDefinition<ExploreRoute>(
+final _exploreNode = flow(
+  '/explore',
   name: 'explore',
-  pathTemplate: '/explore',
   builder: (context, route) => const SizedBox.shrink(),
-  factory: (_) => const ExploreRoute(),
 );

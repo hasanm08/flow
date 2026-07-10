@@ -1,37 +1,99 @@
 import 'package:flow_routing/flow_routing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Benchmark-style stress test for route matching performance.
-///
-/// Run: `flutter test test/match_benchmark_test.dart`
+/// Performance benchmarks for high-FPS routing targets.
 void main() {
-  test('MatchEngine resolves among 100 routes at scale', () {
-    final routes = List.generate(100, (i) {
-      return FlowLeafNode(
-        FlowRouteDefinition<_BenchRoute>(
+  group('MatchEngine benchmarks', () {
+    test('resolves among 100 routes at scale', () {
+      final routes = List.generate(100, (i) {
+        return flow(
+          '/section/$i/item/:id',
           name: 'route_$i',
-          pathTemplate: '/section/$i/item/:id',
           builder: (_, _) => throw UnimplementedError(),
-          factory: (params) => _BenchRoute(id: int.parse(params['id']!)),
-        ),
+        );
+      });
+
+      final engine = MatchEngine(routes);
+      const iterations = 10000;
+
+      final stopwatch = Stopwatch()..start();
+      for (var i = 0; i < iterations; i++) {
+        final result = engine.match(Uri.parse('/section/42/item/99'));
+        expect(result.isError, isFalse);
+      }
+      stopwatch.stop();
+
+      final usPerOp = stopwatch.elapsedMicroseconds / iterations;
+      // ignore: avoid_print
+      print(
+        'MatchEngine: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)',
       );
+      expect(usPerOp, lessThan(50));
     });
 
-    final engine = MatchEngine(routes);
-    const iterations = 10000;
+    test('typed leaf match is faster than full scan', () {
+      final routes = List.generate(100, (i) {
+        return flow(
+          '/section/$i/item/:id',
+          name: 'route_$i',
+          builder: (_, _) => throw UnimplementedError(),
+        );
+      });
 
-    for (var i = 0; i < iterations; i++) {
-      final result = engine.match(Uri.parse('/section/42/item/99'));
-      expect(result.isError, isFalse);
-      expect((result.chain.leaf!.route as _BenchRoute).id, 99);
-    }
+      final registry = RouteRegistry(routes: routes);
+      const route = FlowRoute(
+        name: 'route_42',
+        pathTemplate: '/section/42/item/:id',
+        pathParameters: {'id': '99'},
+      );
+      const iterations = 10000;
+
+      final stopwatch = Stopwatch()..start();
+      for (var i = 0; i < iterations; i++) {
+        registry.matchTypedRoute(route);
+      }
+      stopwatch.stop();
+
+      final usPerOp = stopwatch.elapsedMicroseconds / iterations;
+      // ignore: avoid_print
+      print(
+        'matchTypedRoute: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)',
+      );
+      expect(usPerOp, lessThan(10));
+    });
   });
 
-  test('RouteSegmentIndex preserves match correctness', () {
+  group('NavigationEngine benchmarks', () {
+    test('go dispatch with typed fast path', () async {
+      final registry = RouteRegistry(
+        routes: [
+          _homeNode,
+          _userNode,
+        ],
+      );
+      final engine = NavigationEngine(registry: registry);
+      const iterations = 1000;
+
+      final stopwatch = Stopwatch()..start();
+      for (var i = 0; i < iterations; i++) {
+        await engine.dispatch(GoIntent(Routes.user(id: i % 50)));
+      }
+      stopwatch.stop();
+
+      final usPerOp = stopwatch.elapsedMicroseconds / iterations;
+      // ignore: avoid_print
+      print(
+        'GoIntent dispatch: ${usPerOp.toStringAsFixed(2)} µs/op ($iterations iterations)',
+      );
+      expect(usPerOp, lessThan(500));
+    });
+  });
+
+  test('RouteTrieIndex preserves match correctness', () {
     final engine = MatchEngine([
-      FlowLeafNode(_homeDefinition),
-      FlowLeafNode(_userDefinition),
-      FlowLeafNode(_settingsDefinition),
+      _homeNode,
+      _userNode,
+      _settingsNode,
     ]);
 
     expect(engine.match(Uri.parse('/home')).isError, isFalse);
@@ -41,61 +103,28 @@ void main() {
   });
 }
 
-final class _BenchRoute extends FlowRoute {
-  const _BenchRoute({required this.id});
-  final int id;
-  @override
-  String get name => 'bench';
-  @override
-  String get pathTemplate => '/section/:section/item/:id';
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
+abstract final class Routes {
+  static FlowRoute user({required int id}) => FlowRoute(
+    name: 'user',
+    pathTemplate: '/users/:id',
+    pathParameters: {'id': '$id'},
+  );
 }
 
-final class _HomeRoute extends FlowRoute {
-  const _HomeRoute();
-  @override
-  String get name => 'home';
-  @override
-  String get pathTemplate => '/home';
-}
-
-final class _UserRoute extends FlowRoute {
-  const _UserRoute({required this.id});
-  final int id;
-  @override
-  String get name => 'user';
-  @override
-  String get pathTemplate => '/users/:id';
-  @override
-  Map<String, String> get pathParameters => {'id': '$id'};
-}
-
-final class _SettingsRoute extends FlowRoute {
-  const _SettingsRoute();
-  @override
-  String get name => 'settings';
-  @override
-  String get pathTemplate => '/settings';
-}
-
-final _homeDefinition = FlowRouteDefinition<_HomeRoute>(
+final _homeNode = flow(
+  '/home',
   name: 'home',
-  pathTemplate: '/home',
   builder: (_, _) => throw UnimplementedError(),
-  factory: (_) => const _HomeRoute(),
 );
 
-final _userDefinition = FlowRouteDefinition<_UserRoute>(
+final _userNode = flow(
+  '/users/:id',
   name: 'user',
-  pathTemplate: '/users/:id',
   builder: (_, _) => throw UnimplementedError(),
-  factory: (params) => _UserRoute(id: int.parse(params['id']!)),
 );
 
-final _settingsDefinition = FlowRouteDefinition<_SettingsRoute>(
+final _settingsNode = flow(
+  '/settings',
   name: 'settings',
-  pathTemplate: '/settings',
   builder: (_, _) => throw UnimplementedError(),
-  factory: (_) => const _SettingsRoute(),
 );

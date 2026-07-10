@@ -44,43 +44,55 @@ final class OverlayStack {
 
 /// Complete immutable navigation state.
 final class NavigationState {
-  const NavigationState({
+  NavigationState({
     required this.locationChain,
     this.overlayStacks = const {},
     this.extra,
     this.branchLocations = const {},
-  });
+  }) : _location = _computeLocation(locationChain);
 
   final RouteMatchChain locationChain;
   final Map<String, OverlayStack> overlayStacks;
   final Object? extra;
   final Map<int, String> branchLocations;
 
+  final String _location;
+
   bool get isEmpty => locationChain.isEmpty;
 
-  String get location {
-    final path = locationChain.uri.path;
-    final normalizedPath = path.isEmpty ? '/' : path;
-    final query = locationChain.uri.query;
-    if (query.isEmpty) return normalizedPath;
-    return '$normalizedPath?$query';
-  }
+  /// Cached at construction — avoids recomputing on every access.
+  String get location => _location;
 
   Uri get uri => locationChain.uri;
 
   OverlayStack overlayFor(String navigatorId) =>
       overlayStacks[navigatorId] ?? const OverlayStack();
 
+  static String _computeLocation(RouteMatchChain chain) {
+    final path = chain.uri.path;
+    final normalizedPath = path.isEmpty ? '/' : path;
+    final query = chain.uri.query;
+    if (query.isEmpty) return normalizedPath;
+    return '$normalizedPath?$query';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is NavigationState &&
-          location == other.location &&
+          locationChain.uri == other.locationChain.uri &&
+          locationChain.matches.length ==
+              other.locationChain.matches.length &&
           extra == other.extra &&
           _mapEquals(overlayStacks, other.overlayStacks);
 
   @override
-  int get hashCode => Object.hash(location, extra, overlayStacks.length);
+  int get hashCode => Object.hash(
+    locationChain.uri,
+    locationChain.matches.length,
+    extra,
+    overlayStacks.length,
+  );
 
   static bool _mapEquals(
     Map<String, OverlayStack> a,
@@ -102,8 +114,9 @@ final class NavigationState {
     bool clearExtra = false,
     Map<int, String>? branchLocations,
   }) {
+    final chain = locationChain ?? this.locationChain;
     return NavigationState(
-      locationChain: locationChain ?? this.locationChain,
+      locationChain: chain,
       overlayStacks: overlayStacks ?? this.overlayStacks,
       extra: clearExtra ? null : (extra ?? this.extra),
       branchLocations: branchLocations ?? this.branchLocations,

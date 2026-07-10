@@ -1,51 +1,78 @@
 import '../typed_routes/location_builder.dart';
 
-/// Base class for strongly typed routes.
+/// Lazily caches computed [FlowRoute.location] strings per instance.
+final Expando<String> _routeLocationCache = Expando();
+
+/// A typed route instance — no subclass needed.
 ///
-/// Subclass for each destination. URLs are always derived via [location].
+/// Define route constants or factory functions in your app, then navigate:
 ///
 /// ```dart
-/// final class UserRoute extends FlowRoute {
-///   const UserRoute({required this.id});
-///   final int id;
-///
-///   @override
-///   String get name => 'user';
-///
-///   @override
-///   String get pathTemplate => '/users/:id';
-///
-///   @override
-///   Map<String, String> get pathParameters => {'id': '$id'};
-/// }
+/// context.flow(Routes.home);
+/// context.flow(Routes.about, push: true);
+/// context.pop();
 /// ```
-abstract class FlowRoute {
-  const FlowRoute();
+final class FlowRoute {
+  const FlowRoute({
+    required this.name,
+    required this.pathTemplate,
+    this.pathParameters = const {},
+    this.queryParameters = const {},
+    this.fragment,
+    this.extra,
+  });
 
   /// Stable route name used for named navigation and restoration.
-  String get name;
+  final String name;
 
   /// Path template, e.g. `/users/:id`.
-  String get pathTemplate;
+  final String pathTemplate;
 
   /// Path parameters for this route instance.
-  Map<String, String> get pathParameters => const {};
+  final Map<String, String> pathParameters;
 
   /// Query parameters for this route instance.
-  Map<String, String> get queryParameters => const {};
+  final Map<String, String> queryParameters;
 
   /// Optional URI fragment.
-  String? get fragment => null;
+  final String? fragment;
+
+  /// Optional typed payload attached at navigation time.
+  final Object? extra;
 
   /// Canonical URL location — never construct URLs manually.
-  String get location => LocationBuilder.fromRoute(this).build();
+  ///
+  /// Cached per instance after first access.
+  String get location =>
+      _routeLocationCache[this] ??= LocationBuilder.fromRoute(this).build();
+
+  /// Whether this route matches [name].
+  bool isName(String name) => this.name == name;
+
+  FlowRoute copyWith({
+    String? name,
+    String? pathTemplate,
+    Map<String, String>? pathParameters,
+    Map<String, String>? queryParameters,
+    String? fragment,
+    Object? extra,
+  }) {
+    return FlowRoute(
+      name: name ?? this.name,
+      pathTemplate: pathTemplate ?? this.pathTemplate,
+      pathParameters: pathParameters ?? this.pathParameters,
+      queryParameters: queryParameters ?? this.queryParameters,
+      fragment: fragment ?? this.fragment,
+      extra: extra ?? this.extra,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is FlowRoute &&
-          runtimeType == other.runtimeType &&
           name == other.name &&
+          pathTemplate == other.pathTemplate &&
           _mapEquals(pathParameters, other.pathParameters) &&
           _mapEquals(queryParameters, other.queryParameters) &&
           fragment == other.fragment;
@@ -53,6 +80,7 @@ abstract class FlowRoute {
   @override
   int get hashCode => Object.hash(
     name,
+    pathTemplate,
     Object.hashAll(pathParameters.entries),
     Object.hashAll(queryParameters.entries),
     fragment,

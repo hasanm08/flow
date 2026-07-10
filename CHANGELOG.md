@@ -1,3 +1,41 @@
+## 2.0.0
+
+**Instance-based routing — no route classes required.**
+
+### Breaking changes
+- `FlowRoute` is now a concrete `final class` — define route **instances** instead of subclasses
+- `FlowRouteDefinition` is no longer generic; `factory` is optional (auto-generated from path params)
+- `goRouterPathToDefinition` no longer takes a type parameter
+
+### New API
+- `flow()` top-level helper for concise route registration
+- `FlowRouteAccess` extension: `pathParam`, `intPathParam`, `queryParam`, `isName`
+- `FlowRoute.isName()` for guard checks without `is` type tests
+- `FlowRoute.copyWith()` and optional `extra` payload
+
+### Performance (120+ FPS target)
+- Multi-level **route trie** — O(depth) candidate lookup instead of O(routes) for shared prefixes
+- **MatchEngine** scratch buffers — zero per-match list/map allocation on hot path
+- **`matchLeaf` fast path** — typed `context.flow()` skips full tree scan (O(1) name lookup)
+- **Page cache** — reuses unchanged `Page` instances when `pageKey` / location is stable
+- **Location caching** — `FlowRoute.location` and `NavigationState.location` computed once
+- **URL sync skip** — platform URL updated only when URI actually changes
+- **Sync guard/middleware fast path** — no microtask overhead for synchronous guards
+- **Single `FlowRouterScope`** — removed per-page inherited notifier overhead
+
+### Navigation API
+- `context.flow(route)` — unified go navigation
+- `context.flow(route, push: true)` — overlay push
+- `context.flowNamed(name, ...)` — goNamed / pushNamed equivalent
+- `context.pop()` — pop overlay or history
+
+### Example
+```dart
+context.flow(Routes.user(id: 42));
+context.flow(Routes.about, push: true);
+context.pop();
+```
+
 ## 1.0.3
 
 - add benchmark image to README for performance tracking.
