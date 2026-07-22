@@ -164,13 +164,32 @@ FlowShellNode(
   pathTemplate: '/app',
   navigatorId: NavigatorId('shell'),
   builder: (context, child) => Scaffold(body: child),
-  children: [...],
+  children: [
+    flow('/home', name: 'home', builder: ...), // full path: /app/home
+  ],
 )
 ```
+
+Child paths are relative to the shell prefix. `builder` wraps the matched page.
 
 ### `FlowStatefulShellNode`
 
 Tab-based navigation with independent branch stacks.
+
+```dart
+FlowStatefulShellNode(
+  pathTemplate: '/',
+  builder: (context, shell) => Scaffold(
+    body: shell.child,
+    bottomNavigationBar: NavigationBar(
+      selectedIndex: shell.currentIndex,
+      onDestinationSelected: shell.goBranch,
+      destinations: [...],
+    ),
+  ),
+  branches: [...],
+)
+```
 
 ## Web
 

@@ -145,6 +145,77 @@ void main() {
     });
   });
 
+  group('FlowShellNode matching', () {
+    late MatchEngine engine;
+
+    setUp(() {
+      engine = MatchEngine([
+        FlowShellNode(
+          pathTemplate: '/app',
+          navigatorId: const NavigatorId('shell'),
+          builder: (context, child) => child,
+          children: [
+            flow(
+              '/home',
+              name: 'shell-home',
+              builder: (context, route) => const SizedBox.shrink(),
+            ),
+            flow(
+              '/settings',
+              name: 'shell-settings',
+              builder: (context, route) => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ]);
+    });
+
+    test('records shell match with builder node', () {
+      final result = engine.match(Uri.parse('/app/home'));
+      expect(result.isError, isFalse);
+      expect(result.chain.leaf?.route.name, 'shell-home');
+      expect(result.chain.shellMatches, hasLength(1));
+      expect(result.chain.shellMatches.first.shell, isNotNull);
+      expect(result.chain.shellMatches.first.pathTemplate, '/app');
+    });
+
+    test('matches nested path under shell prefix', () {
+      final result = engine.match(Uri.parse('/app/settings'));
+      expect(result.isError, isFalse);
+      expect(result.chain.leaf?.route.name, 'shell-settings');
+      expect(result.chain.shellMatches, hasLength(1));
+    });
+
+    test('typed navigation preserves shell matches', () {
+      final registry = RouteRegistry(
+        routes: [
+          FlowShellNode(
+            pathTemplate: '/app',
+            navigatorId: const NavigatorId('shell'),
+            builder: (context, child) => child,
+            children: [
+              flow(
+                '/home',
+                name: 'shell-home',
+                builder: (context, route) => const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ],
+      );
+
+      expect(registry.fullPathTemplateFor('shell-home'), '/app/home');
+
+      final result = registry.matchTypedRoute(
+        const FlowRoute(name: 'shell-home', pathTemplate: '/home'),
+      );
+      expect(result, isNotNull);
+      expect(result!.isError, isFalse);
+      expect(result.chain.shellMatches, hasLength(1));
+      expect(result.chain.uri.path, '/app/home');
+    });
+  });
+
   group('FakeFlowRouter', () {
     test('records navigation intents', () async {
       final fake = FakeFlowRouter();

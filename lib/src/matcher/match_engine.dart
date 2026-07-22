@@ -113,27 +113,29 @@ final class MatchEngine {
             segmentIndex,
           );
           if (match != null) {
-            final consumed = match.$2;
-            if (consumed == segments.length - segmentIndex) {
-              final params = match.$1;
-              _mergeParams(params, queryParams);
-              final route = definition.factory(_params);
-              _matches.add(
-                RouteMatch(
-                  route: route,
-                  definition: definition,
-                  pathParameters: Map.unmodifiable(params),
-                  matchedLocation: LocationBuilder.pathOnly(
-                    definition.pattern,
-                    params,
-                  ),
+            final params = match.$1;
+            _mergeParams(params, queryParams);
+            final route = definition.factory(_params);
+            _matches.add(
+              RouteMatch(
+                route: route,
+                definition: definition,
+                pathParameters: Map.unmodifiable(params),
+                matchedLocation: LocationBuilder.pathOnly(
+                  definition.pattern,
+                  params,
                 ),
-              );
-              return branchIndex;
-            }
+              ),
+            );
+            return branchIndex;
           }
         case FlowShellNode(:final pattern, :final navigatorId, :final children):
-          final match = _matchPattern(pattern, segments, segmentIndex);
+          final match = _matchPattern(
+            pattern,
+            segments,
+            segmentIndex,
+            prefix: true,
+          );
           if (match != null) {
             final params = match.$1;
             final consumed = match.$2;
@@ -143,6 +145,7 @@ final class MatchEngine {
                 pathTemplate: node.pathTemplate,
                 navigatorId: navigatorId.value,
                 matchedLocation: shellLocation,
+                shell: node,
               ),
             );
             final childResult = _matchNodes(
@@ -162,13 +165,29 @@ final class MatchEngine {
             }
           }
         case FlowStatefulShellNode(:final pattern, :final branches):
-          final match = _matchPattern(pattern, segments, segmentIndex);
+          final match = _matchPattern(
+            pattern,
+            segments,
+            segmentIndex,
+            prefix: true,
+          );
           if (match != null) {
             final params = match.$1;
             final consumed = match.$2;
             final shellLocation = LocationBuilder.pathOnly(pattern, params);
+            final shellCountBefore = _shellMatches.length;
             for (var i = 0; i < branches.length; i++) {
               final branch = branches[i];
+              _shellMatches.add(
+                ShellMatch(
+                  pathTemplate: node.pathTemplate,
+                  navigatorId: branch.navigatorId.value,
+                  matchedLocation: shellLocation,
+                  isStateful: true,
+                  branchIndex: i,
+                  statefulShell: node,
+                ),
+              );
               final childResult = _matchNodes(
                 branch.children,
                 segments,
@@ -177,19 +196,11 @@ final class MatchEngine {
                 i,
                 queryParams,
               );
-              if (childResult != null) {
-                _shellMatches.add(
-                  ShellMatch(
-                    pathTemplate: node.pathTemplate,
-                    navigatorId: branch.navigatorId.value,
-                    matchedLocation: shellLocation,
-                    isStateful: true,
-                    branchIndex: i,
-                  ),
-                );
-                return i;
-              }
+              if (childResult != null) return i;
               _matches.clear();
+              while (_shellMatches.length > shellCountBefore) {
+                _shellMatches.removeLast();
+              }
             }
           }
         case FlowBranchNode():
@@ -211,11 +222,16 @@ final class MatchEngine {
     }
   }
 
+  /// Matches [pattern] against [segments] starting at [start].
+  ///
+  /// When [prefix] is true (shell routes), remaining segments after the
+  /// pattern are allowed so children can match the rest of the path.
   (Map<String, String>, int)? _matchPattern(
     PathPattern pattern,
     List<String> segments,
-    int start,
-  ) {
+    int start, {
+    bool prefix = false,
+  }) {
     _pathParams.clear();
     var segIndex = start;
     var patIndex = 0;
@@ -254,7 +270,7 @@ final class MatchEngine {
       }
     }
 
-    if (segIndex != segments.length) return null;
+    if (!prefix && segIndex != segments.length) return null;
     return (
       Map.unmodifiable(Map<String, String>.from(_pathParams)),
       segIndex - start,

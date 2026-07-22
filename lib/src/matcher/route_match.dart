@@ -69,6 +69,23 @@ RouteMatchChain applyRouteToChain(RouteMatchChain chain, FlowRoute route) {
   if (chain.matches.isEmpty) return chain;
   final matches = List<RouteMatch>.from(chain.matches);
   matches[matches.length - 1] = matches.last.copyWithRoute(route);
+
+  // When shells are present, keep the matched path (includes shell prefixes)
+  // and only refresh query/fragment from the typed route.
+  if (chain.shellMatches.isNotEmpty) {
+    final path = chain.uri.path.isEmpty ? '/' : chain.uri.path;
+    return chain.copyWith(
+      matches: matches,
+      uri: Uri(
+        path: path,
+        queryParameters: route.queryParameters.isEmpty
+            ? null
+            : route.queryParameters,
+        fragment: route.fragment,
+      ),
+    );
+  }
+
   return chain.copyWith(matches: matches, uri: Uri.parse(route.location));
 }
 
@@ -80,6 +97,8 @@ final class ShellMatch {
     required this.matchedLocation,
     this.isStateful = false,
     this.branchIndex = 0,
+    this.shell,
+    this.statefulShell,
   });
 
   final String pathTemplate;
@@ -87,6 +106,12 @@ final class ShellMatch {
   final String matchedLocation;
   final bool isStateful;
   final int branchIndex;
+
+  /// Matched [FlowShellNode], when [isStateful] is false.
+  final FlowShellNode? shell;
+
+  /// Matched [FlowStatefulShellNode], when [isStateful] is true.
+  final FlowStatefulShellNode? statefulShell;
 }
 
 /// Result of matching a URI against the route registry.

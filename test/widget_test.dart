@@ -55,4 +55,106 @@ void main() {
 
     expect(find.text('Detail'), findsOneWidget);
   });
+
+  testWidgets('FlowShellNode.builder wraps the matched page', (tester) async {
+    var shellBuilds = 0;
+
+    final router = FlowRouter(
+      initialLocation: '/app/home',
+      routes: [
+        FlowShellNode(
+          pathTemplate: '/app',
+          navigatorId: const NavigatorId('shell'),
+          builder: (context, child) {
+            shellBuilds++;
+            return Scaffold(
+              appBar: AppBar(title: const Text('Shell')),
+              body: child,
+            );
+          },
+          children: [
+            flow(
+              '/home',
+              name: 'home',
+              builder: (context, route) => const Text('Home Body'),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(FlowApp.router(router: router));
+    await tester.pumpAndSettle();
+
+    expect(shellBuilds, greaterThan(0));
+    expect(find.text('Shell'), findsOneWidget);
+    expect(find.text('Home Body'), findsOneWidget);
+  });
+
+  testWidgets('FlowStatefulShellNode.builder receives active child', (
+    tester,
+  ) async {
+    var shellBuilds = 0;
+
+    final router = FlowRouter(
+      initialLocation: '/home',
+      routes: [
+        FlowStatefulShellNode(
+          pathTemplate: '/',
+          builder: (context, shell) {
+            shellBuilds++;
+            return Scaffold(
+              body: shell.child,
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: shell.currentIndex,
+                onDestinationSelected: shell.goBranch,
+                destinations: const [
+                  NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+                  NavigationDestination(
+                    icon: Icon(Icons.person),
+                    label: 'Profile',
+                  ),
+                ],
+              ),
+            );
+          },
+          branches: [
+            FlowBranchNode(
+              navigatorId: const NavigatorId('home'),
+              defaultLocation: '/home',
+              children: [
+                flow(
+                  '/home',
+                  name: 'home',
+                  builder: (context, route) => const Text('Home Tab'),
+                ),
+              ],
+            ),
+            FlowBranchNode(
+              navigatorId: const NavigatorId('profile'),
+              defaultLocation: '/profile',
+              children: [
+                flow(
+                  '/profile',
+                  name: 'profile',
+                  builder: (context, route) => const Text('Profile Tab'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(FlowApp.router(router: router));
+    await tester.pumpAndSettle();
+
+    expect(shellBuilds, greaterThan(0));
+    expect(find.text('Home Tab'), findsOneWidget);
+
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profile Tab'), findsOneWidget);
+  });
 }

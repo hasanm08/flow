@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/flow_router.dart';
+import '../matcher/route_match.dart';
 import '../matcher/route_registry.dart';
 import '../navigation/navigation_state.dart';
+import '../shell/flow_stateful_shell_controller.dart';
 
 /// Builds [Page] objects from navigation state with page-level caching.
 final class PageBuilder {
@@ -20,6 +22,7 @@ final class PageBuilder {
 
     final pages = <Page<void>>[];
     final keys = <Object>[];
+    final shellMatches = state.locationChain.shellMatches;
 
     for (final match in state.locationChain.matches) {
       final key = match.definition.pageKey ?? match.matchedLocation;
@@ -33,8 +36,10 @@ final class PageBuilder {
       final page = match.definition.transition.buildPage<void>(
         key: ValueKey('flow-$key'),
         child: Builder(
-          builder: (scopedContext) =>
-              match.definition.build(scopedContext, match.route),
+          builder: (scopedContext) {
+            final content = match.definition.build(scopedContext, match.route);
+            return _wrapWithShells(scopedContext, content, shellMatches);
+          },
         ),
       );
       pages.add(page);
@@ -72,6 +77,44 @@ final class PageBuilder {
       ..clear()
       ..addAll(keys);
     return pages;
+  }
+
+  /// Wraps [child] with shell builders from innermost to outermost.
+  Widget _wrapWithShells(
+    BuildContext context,
+    Widget child,
+    List<ShellMatch> shellMatches,
+  ) {
+    if (shellMatches.isEmpty) return child;
+
+    var wrapped = child;
+    for (var i = shellMatches.length - 1; i >= 0; i--) {
+      final shellMatch = shellMatches[i];
+      final current = wrapped;
+
+      final shell = shellMatch.shell;
+      if (shell != null) {
+        wrapped = Builder(
+          builder: (scopedContext) => shell.builder(scopedContext, current),
+        );
+        continue;
+      }
+
+      final stateful = shellMatch.statefulShell;
+      if (stateful != null) {
+        final controller = FlowStatefulShellControllerImpl(
+          router: router,
+          node: stateful,
+          currentIndex: shellMatch.branchIndex,
+          child: current,
+        );
+        wrapped = Builder(
+          builder: (scopedContext) =>
+              stateful.builder(scopedContext, controller),
+        );
+      }
+    }
+    return wrapped;
   }
 
   int? _indexOfKey(Object key) {

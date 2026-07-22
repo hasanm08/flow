@@ -170,9 +170,19 @@ final class FlowStatefulShellNode extends FlowRouteNode {
 
 /// Controller passed to stateful shell builders.
 abstract interface class FlowStatefulShellController {
+  /// Active branch index.
   int get currentIndex;
+
+  /// Widget for the currently active branch (typically used as `Scaffold.body`).
+  Widget get child;
+
+  /// Switch to [index], optionally navigating to [route] within that branch.
   void goBranch(int index, {FlowRoute? route});
+
+  /// Reset a single branch to its default location.
   void resetBranch(int index);
+
+  /// Reset every branch to its default location.
   void resetAllBranches();
 }
 

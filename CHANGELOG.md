@@ -1,3 +1,19 @@
+## 2.1.0
+
+**Shell builders now run.**
+
+### Fixes
+- `FlowShellNode.builder` is invoked and wraps matched page content
+- `FlowStatefulShellNode.builder` is invoked with a controller that exposes `child` for the active branch
+- Shell routes correctly match as path prefixes (children match the remainder)
+- Typed navigation (`matchTypedRoute`) preserves `shellMatches` when the route tree contains shells
+- Composed full paths under shell prefixes (e.g. `/app` + `/home` → `/app/home`)
+
+### API
+- `FlowStatefulShellController.child` — active branch widget for shell layouts
+- `ShellMatch.shell` / `ShellMatch.statefulShell` — matched shell nodes for builders
+- `RouteRegistry.fullPathTemplateFor(name)` — full path including shell prefixes
+
 ## 2.0.0
 
 **Instance-based routing — no route classes required.**
